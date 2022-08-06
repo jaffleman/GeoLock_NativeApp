@@ -8,6 +8,7 @@
 
 import React from 'react';
 import type {Node} from 'react';
+import Icon from 'react-native-vector-icons/FontAwesome';
 import {
   SafeAreaView,
   ScrollView,
@@ -54,11 +55,11 @@ const Section = ({children, title}): Node => {
 
 const App: () => Node = () => {
   const isDarkMode = useColorScheme() === 'dark';
-
+  
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
-
+  
   return (
     <SafeAreaView style={backgroundStyle}>
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
@@ -66,6 +67,7 @@ const App: () => Node = () => {
         contentInsetAdjustmentBehavior="automatic"
         style={backgroundStyle}>
         <Header />
+        <Icon name="lock" size={30} color="#900" />
         <View
           style={{
             backgroundColor: isDarkMode ? Colors.black : Colors.white,
