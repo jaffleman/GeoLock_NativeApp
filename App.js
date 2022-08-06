@@ -1,118 +1,76 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- * @flow strict-local
- */
-
-import React, {useEffect} from 'react';
-import type {Node} from 'react';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import React, {useEffect, useRef, useState} from 'react';
+import { Button, StyleSheet, View, Text, Dimensions, TouchableOpacity, Modal, Pressable, TextInput } from 'react-native';
+import Geolocation from 'react-native-geolocation-service';
+import MapView,  { Marker, PROVIDER_GOOGLE } from 'react-native-maps'; // remove PROVIDER_GOOGLE import if not using Google Maps
 import requestLocationPermission from './src/requestLocationPermission'
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+const {width, height} = Dimensions.get('window');
+const ASPECT_RATIO = width / height;
+const LATITUDE_DELTA = 0.0022;
+const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
 
-const Section = ({children, title}): Node => {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-};
+export default app=() => {
+  console.log('STARTER')
+  const [coordonates, setCoordonates]= useState({"permission":false})
+  function getPosition(callback) {
+    Geolocation.getCurrentPosition(({coords})=>{
+      callback(coords)
+    },
+    (error)=>{
+      console.log("errors: ", error.code, error.message)
+    })
+  }
 
-const App: () => Node = () => {
-  const isDarkMode = useColorScheme() === 'dark';
   useEffect(()=>{
-    requestLocationPermission((permission)=>{window.alert(permission?'Vous avez la permition':'pas de permition')})
+    requestLocationPermission((permission)=>{
+      if(permission){
+        getPosition((coords)=>{
+          setCoordonates({
+            ...coords,
+            permission: true
+          })
+        })
+      }
+    })
   },[])
-  
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
-  
-  return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <Icon name="lock" size={30} color="#900" />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.js</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
-  );
-};
 
+  if(coordonates.permission){
+    const {latitude,longitude}=coordonates
+        return <View style={styles.container}>
+          <MapView
+            showsUserLocation={true}
+            provider={PROVIDER_GOOGLE} // remove if not using Google Maps
+            style={styles.map}
+            initialRegion={{
+              latitude,
+              longitude,
+              latitudeDelta: LATITUDE_DELTA,
+              longitudeDelta: LONGITUDE_DELTA,
+            }}
+          >
+          </MapView>
+        </View>
+  }else {
+    return(
+      <Button title='authorisation' 
+        onPress={()=>{requestLocationPermission((permission)=>{setCoordonates({"permission":permission})})}}
+        >demander authorisation
+      </Button>
+    )
+  }
+}
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
+  container: {
+    ...StyleSheet.absoluteFillObject,
+    height:height-35,
+    width,
+    alignItems: 'center',
   },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
+  map: {...StyleSheet.absoluteFillObject},
+  centeredView: {
+    backgroundColor:'rgba(0,0,0,0.75)',
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
-
-export default App;
