@@ -4,7 +4,6 @@ import Geolocation from 'react-native-geolocation-service';
 import MapView,  { Marker, PROVIDER_GOOGLE } from 'react-native-maps'; // remove PROVIDER_GOOGLE import if not using Google Maps
 import requestLocationPermission from './src/requestLocationPermission'
 import { Button, FAB, Modal, TextInput, Portal } from 'react-native-paper';
-import { red100 } from 'react-native-paper/lib/typescript/styles/colors';
 
 const {width, height} = Dimensions.get('window');
 const ASPECT_RATIO = width / height;
@@ -115,8 +114,10 @@ export default app=() => {
                 left={<TextInput.Icon name="lock" />}
                 onChangeText={(e)=>code=e}
               />
-              <Button mode='containedtext' onPress={modalswitcher}>close</Button>
-              <Button mode='containedtext' onPress={()=>console.log(accesType,code)}>valide</Button>
+              <View style={{flexDirection:'row'}}>
+                <Button mode='containedtext' style={{flex:1, }} onPress={modalswitcher}>Annuler</Button>
+                <Button mode='containedtext' style={{flex:1, }} onPress={()=>console.log(accesType,code)}>Enregistrer</Button>
+              </View>
           </Modal>
         </View>
         
