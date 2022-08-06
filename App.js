@@ -3,6 +3,7 @@ import { Button, StyleSheet, View, Text, Dimensions, TouchableOpacity, Modal, Pr
 import Geolocation from 'react-native-geolocation-service';
 import MapView,  { Marker, PROVIDER_GOOGLE } from 'react-native-maps'; // remove PROVIDER_GOOGLE import if not using Google Maps
 import requestLocationPermission from './src/requestLocationPermission'
+import { FAB } from 'react-native-paper';
 
 const {width, height} = Dimensions.get('window');
 const ASPECT_RATIO = width / height;
@@ -49,6 +50,11 @@ export default app=() => {
             }}
           >
           </MapView>
+          <FAB
+            icon="plus"
+            style={styles.fab}
+            onPress={() => console.log('Pressed')}
+          />
         </View>
   }else {
     return(
@@ -72,5 +78,11 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+  },
+  fab: {
+    position: 'absolute',
+    margin: 16,
+    right: 10,
+    bottom: 10,
   },
 });
