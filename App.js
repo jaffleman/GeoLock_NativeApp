@@ -60,22 +60,14 @@ export default app=() => {
             style={styles.fab}
             onPress={modalswitcher}
           />
-            <Portal>
           <Modal visible={showModal} onDismiss={modalswitcher} style={{
-             height,
-             width,
-             position: 'absolute',
-             top: 0,
-             left: 0,
-             justifyContent: 'center',
+            justifyContent:'flex-start'
           } }
           contentContainerStyle={{
-            top: 0,
-            left: 0,
+            marginLeft:'auto',
+            marginRight:'auto',
             backgroundColor:'white', 
             borderRadius:10,
-            position: 'absolute',
-            // justifyContent: 'center',
           }} >
               <Text style={{textAlign:'center', margin:10}}>le text de ma modale </Text>
               <MapView
@@ -108,7 +100,6 @@ export default app=() => {
               <Button mode='containedtext' onPress={modalswitcher}>close</Button>
               <Button mode='containedtext' onPress={()=>console.log(accesType,code)}>valide</Button>
           </Modal>
-            </Portal>
         </View>
         
   }else {
@@ -135,7 +126,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   map2: {
-
+    marginLeft:'auto',
+    marginRight:'auto',
     width:350,
     height:350,
   },
