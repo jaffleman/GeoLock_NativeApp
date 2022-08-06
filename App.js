@@ -78,6 +78,17 @@ export default app=() => {
             // justifyContent: 'center',
           }} >
               <Text style={{textAlign:'center', margin:10}}>le text de ma modale </Text>
+              <MapView
+                provider={PROVIDER_GOOGLE} // remove if not using Google Maps
+                style={styles.map2}
+                initialRegion={{
+                  latitude,
+                  longitude,
+                  latitudeDelta: LATITUDE_DELTA,
+                  longitudeDelta: LONGITUDE_DELTA,
+                }}
+              >
+              </MapView>
               <TextInput
                 style={{width:350, marginLeft:'auto', marginRight:'auto'}}
                 autoCapitalize
@@ -122,6 +133,11 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+  },
+  map2: {
+
+    width:350,
+    height:350,
   },
   fab: {
     position: 'absolute',
