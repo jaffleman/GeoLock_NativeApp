@@ -6,9 +6,10 @@
  * @flow strict-local
  */
 
-import React from 'react';
+import React, {useEffect} from 'react';
 import type {Node} from 'react';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import requestLocationPermission from './src/requestLocationPermission'
 import {
   SafeAreaView,
   ScrollView,
@@ -55,6 +56,9 @@ const Section = ({children, title}): Node => {
 
 const App: () => Node = () => {
   const isDarkMode = useColorScheme() === 'dark';
+  useEffect(()=>{
+    requestLocationPermission((permission)=>{window.alert(permission?'Vous avez la permition':'pas de permition')})
+  },[])
   
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
