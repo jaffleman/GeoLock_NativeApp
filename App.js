@@ -4,6 +4,7 @@ import Geolocation from 'react-native-geolocation-service';
 import MapView,  { Marker, PROVIDER_GOOGLE } from 'react-native-maps'; // remove PROVIDER_GOOGLE import if not using Google Maps
 import requestLocationPermission from './src/requestLocationPermission'
 import { Button, FAB, Modal, TextInput, Portal } from 'react-native-paper';
+import { red100 } from 'react-native-paper/lib/typescript/styles/colors';
 
 const {width, height} = Dimensions.get('window');
 const ASPECT_RATIO = width / height;
@@ -14,6 +15,7 @@ export default app=() => {
   console.log('STARTER')
   const [showModal,setShowModal] = useState(false)
   const [coordonates, setCoordonates]= useState({"permission":false})
+  const [markerCoordonates, setMarkerCoordonates] = useState({longitude:0,latitude:0})
   let code, accesType
   function getPosition(callback) {
     Geolocation.getCurrentPosition(({coords})=>{
@@ -25,6 +27,12 @@ export default app=() => {
   }
 
   function modalswitcher(){
+    getPosition((coords)=>{
+      setCoordonates({
+        ...coords,
+        permission: true
+      })
+    })
     setShowModal(!showModal)
   }
   useEffect(()=>{
@@ -80,6 +88,16 @@ export default app=() => {
                   longitudeDelta: LONGITUDE_DELTA,
                 }}
               >
+                <Marker
+                  draggable
+                  title={`${accesType}: ${code}`}
+                  description={`coordonates { ${markerCoordonates.latitude}, ${markerCoordonates.longitude} }`}
+                  key={1}
+                  coordinate={coordonates}
+                  pinColor={'red'} 
+                  onDragEnd={e=>setMarkerCoordonates(e.nativeEvent.coordinate)}
+                >
+                </Marker>
               </MapView>
               <TextInput
                 style={{width:350, marginLeft:'auto', marginRight:'auto'}}
@@ -138,3 +156,9 @@ const styles = StyleSheet.create({
     bottom: 10,
   },
 });
+
+
+
+
+
+
