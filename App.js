@@ -76,7 +76,7 @@ export default app=() => {
             backgroundColor:'white', 
             borderRadius:10,
           }} >
-              <Text style={{textAlign:'center', margin:10}}>le text de ma modale </Text>
+              <Text selectable={false} style={{ color:'#6200ee', fontWeight:'500', fontSize:15, textAlign:'center', margin:10, borderBottomColor:'#a9a9a9', borderBottomWidth:1, margin:0, padding:7}}>AJOUTER UN CODE D'ACCES</Text>
               <MapView
                 provider={PROVIDER_GOOGLE} // remove if not using Google Maps
                 style={styles.map2}
@@ -99,7 +99,7 @@ export default app=() => {
                 </Marker>
               </MapView>
               <TextInput
-                style={{width:350, marginLeft:'auto', marginRight:'auto'}}
+                style={{width:370, marginLeft:'auto', marginRight:'auto'}}
                 autoCapitalize
                 placeholder='Hall, portail, ascenseur, escalier...'
                 label="Type d'acces"
@@ -109,7 +109,7 @@ export default app=() => {
               />
               <TextInput
                 autoCapitalize='characters'
-                style={{width:350, marginLeft:'auto', marginRight:'auto'}}
+                style={{width:370, marginLeft:'auto', marginRight:'auto'}}
                 label="CODE"
                 left={<TextInput.Icon name="lock" />}
                 onChangeText={(e)=>code=e}
@@ -147,8 +147,8 @@ const styles = StyleSheet.create({
   map2: {
     marginLeft:'auto',
     marginRight:'auto',
-    width:350,
-    height:350,
+    width:370,
+    height:250,
   },
   fab: {
     position: 'absolute',
