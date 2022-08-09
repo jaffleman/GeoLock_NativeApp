@@ -4,6 +4,7 @@ import Geolocation from 'react-native-geolocation-service';
 import MapView,  { Marker, PROVIDER_GOOGLE } from 'react-native-maps'; // remove PROVIDER_GOOGLE import if not using Google Maps
 import requestLocationPermission from './src/requestLocationPermission'
 import { Button, FAB, Modal, TextInput, Portal } from 'react-native-paper';
+import { fetcher } from './src/functions/fetcher';
 
 const {width, height} = Dimensions.get('window');
 const ASPECT_RATIO = width / height;
@@ -14,7 +15,8 @@ export default app=() => {
   console.log('STARTER')
   const [showModal,setShowModal] = useState(false)
   const [coordonates, setCoordonates]= useState({"permission":false})
-  const [markerCoordonates, setMarkerCoordonates] = useState({longitude:0,latitude:0})
+  const [markerCoordonates, setMarkerCoordonates] = useState({longitude:null,latitude:null})
+
   let code, accesType
   function getPosition(callback) {
     Geolocation.getCurrentPosition(({coords})=>{
@@ -35,6 +37,7 @@ export default app=() => {
     setShowModal(!showModal)
   }
   useEffect(()=>{
+    console.log('USE-EFFECT')
     requestLocationPermission((permission)=>{
       if(permission){
         getPosition((coords)=>{
@@ -46,7 +49,14 @@ export default app=() => {
       }
     })
   },[])
-
+ function sendToBase() {
+  const body = {
+    "latitude":markerCoordonates.latitude||coordonates.latitude,
+    "longitude":markerCoordonates.longitude||coordonates.longitude,
+    "acces":[{"type": accesType,"code": code}]
+  }
+  fetcher('create', 'POST', body, (e)=>console.log(e) )
+ }
   if(coordonates.permission){
     const {latitude,longitude}=coordonates
         return <View style={styles.container}>
@@ -116,7 +126,7 @@ export default app=() => {
               />
               <View style={{flexDirection:'row'}}>
                 <Button mode='containedtext' style={{flex:1, }} onPress={modalswitcher}>Annuler</Button>
-                <Button mode='containedtext' style={{flex:1, }} onPress={()=>console.log(accesType,code)}>Enregistrer</Button>
+                <Button mode='containedtext' style={{flex:1, }} onPress={sendToBase}>Enregistrer</Button>
               </View>
           </Modal>
         </View>
