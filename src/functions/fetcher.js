@@ -1,7 +1,7 @@
 import { REACT_APP_ROUTE } from "@env"
 
 export async function fetcher (route, method, data, callback){
-    if (data.length === 0){
+    if (data.length === -1){
         if (callback) return callback()
         else return {data:[]}
     }else{
@@ -23,7 +23,7 @@ export async function fetcher (route, method, data, callback){
         })
         if ("ok" in result){
             const ladata = await result.json()
-            if (callback) callback({data: JSON.stringify(ladata)})
+            if (callback) callback(ladata)
             else return {data:ladata}
         }else return {err:result.err}
     }
