@@ -5,49 +5,31 @@ import MapView,  { Marker, PROVIDER_GOOGLE } from 'react-native-maps'; // remove
 import requestLocationPermission from './src/requestLocationPermission'
 import { Button, FAB, Modal, TextInput, Portal } from 'react-native-paper';
 import { fetcher } from './src/functions/fetcher';
+import AddMarkerModal from './src/components/AddMarkerModal';
 
+// ################## les Constantes:
 const {width, height} = Dimensions.get('window');
 const ASPECT_RATIO = width / height;
 const LATITUDE_DELTA = 0.0022;
 const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
 
+
+
 export default app=() => {
   console.log('STARTER')
+
+  // ################ Stats:
   const [markerList, setMarkerList] = useState([])
   const [showModal,setShowModal] = useState(false)
   const [coordonates, setCoordonates]= useState({"permission":false})
   const [markerCoordonates, setMarkerCoordonates] = useState({longitude:null,latitude:null})
   const [accesTab, setAccesTab] = useState([])
+  const [spinner, setSpinner] = useState(false)
 
+  // ############### variables simples:
   let code, accesType
-  function getPosition(callback) {
-    Geolocation.getCurrentPosition(({coords})=>{
-      callback(coords)
-    },
-    (error)=>{
-      console.log("errors: ", error.code, error.message)
-    })
-  }
-  function getAcces(id) {
-    fetcher('getAllAcces', 'POST', {"id":id}, (e)=>setAccesTab(e) )
-  }
-  function modalswitcher(){
-    getPosition((coords)=>{
-      setCoordonates({
-        ...coords,
-        permission: true
-      })
-    })
-    setShowModal(!showModal)
-  }
-  function findMarker({longitude,latitude}) {
-    const body = {
-      "latitude":latitude,
-      "longitude":longitude,
-      "acces":[{"type": accesType,"code": code}]
-    }
-    fetcher('findAllMarker', 'POST', body, (e)=>setMarkerList(e))
-  }
+
+  //################ ComponentDidMount: 
   useEffect(()=>{
     console.log('USE-EFFECT')
     requestLocationPermission((permission)=>{
@@ -62,100 +44,93 @@ export default app=() => {
       }
     })
   },[])
- function sendToBase() {
-  const body = {
-    "latitude":markerCoordonates.latitude||coordonates.latitude,
-    "longitude":markerCoordonates.longitude||coordonates.longitude,
-    "acces":[{"type": accesType,"code": code}]
+
+  // ###################### les Fonctions:
+
+  function getPosition(callback) {
+    Geolocation.getCurrentPosition(
+      ({coords})=>callback(coords),
+      error=>console.log("errors: ", error.code, error.message)
+    )
   }
-  fetcher('create', 'POST', body, (e)=>console.log(e) )
- }
+
+  function getAcces(id) {fetcher('getAllAcces', 'POST', {"id":id}, (e)=>setAccesTab(e) )}
+
+  function modalswitcher(){
+    getPosition(coords=> setCoordonates({...coords, permission: true}))
+    setShowModal(!showModal)
+  }
+
+  function findMarker({longitude,latitude}) {
+    const body = {"latitude":latitude, "longitude":longitude, "acces":[{"type": accesType,"code": code}]}
+    fetcher('findAllMarker', 'POST', body, (e)=>setMarkerList(e))
+  }
+
+  function sendToBase() {
+    const body = {
+      "latitude":markerCoordonates.latitude||coordonates.latitude,
+      "longitude":markerCoordonates.longitude||coordonates.longitude,
+      "acces":[{"type": accesType,"code": code}]
+    }
+    fetcher('create', 'POST', body, setShowModal(false) )
+  }
+
+  //##################### RENDER:
   if(coordonates.permission){
-    console.log('markerList: ', markerList)
     const {latitude,longitude}=coordonates
-        return <View style={styles.container}>
-          <MapView
-            showsUserLocation={true}
-            provider={PROVIDER_GOOGLE} // remove if not using Google Maps
-            style={styles.map}
-            initialRegion={{
-              latitude,
-              longitude,
-              latitudeDelta: LATITUDE_DELTA,
-              longitudeDelta: LONGITUDE_DELTA,
-            }}
-          >
-            {
-              markerList.map((marker) => <Marker
-                draggable={false}
-                title={'Marker'}
-                // description={`CODE: `}
-                onPress={()=>getAcces(marker.id)}
-                key={marker.id}
-                coordinate={{longitude:marker.longitude, latitude:marker.latitude}}
-                pinColor={'red'} 
-              />)
-            }
-          </MapView>
-          <FAB
-            icon="plus"
-            style={styles.fab}
-            onPress={modalswitcher}
-          />
-          <Modal visible={showModal} onDismiss={modalswitcher} style={{
-            justifyContent:'flex-start'
-          } }
-          contentContainerStyle={{
+    return <View style={styles.container}>
+      <MapView
+        followsUserLocation={true}
+        showsUserLocation={true}
+        provider={PROVIDER_GOOGLE} // remove if not using Google Maps
+        style={styles.map}
+        initialRegion={{
+          latitude,
+          longitude,
+          latitudeDelta: LATITUDE_DELTA,
+          longitudeDelta: LONGITUDE_DELTA,
+        }}
+      >
+        {
+          markerList.map((marker) => <Marker
+            draggable={false}
+            title={'Marker'}
+            // description={`CODE: `}
+            onPress={()=>getAcces(marker.id)}
+            key={marker.id}
+            coordinate={{longitude:marker.longitude, latitude:marker.latitude}}
+            pinColor={'red'} 
+          />)
+        }
+      </MapView>
+      <FAB
+        icon="plus"
+        style={styles.fab}
+        onPress={modalswitcher}
+      />
+      <Modal visible={showModal} onDismiss={modalswitcher} style={{justifyContent:'flex-start'}}
+        contentContainerStyle={{
             marginLeft:'auto',
             marginRight:'auto',
             backgroundColor:'white', 
             borderRadius:10,
-          }} >
-              <Text selectable={false} style={{ color:'#6200ee', fontWeight:'500', fontSize:15, textAlign:'center', margin:10, borderBottomColor:'#a9a9a9', borderBottomWidth:1, margin:0, padding:7}}>AJOUTER UN CODE D'ACCES</Text>
-              <MapView
-                provider={PROVIDER_GOOGLE} // remove if not using Google Maps
-                style={styles.map2}
-                initialRegion={{
-                  latitude,
-                  longitude,
-                  latitudeDelta: LATITUDE_DELTA,
-                  longitudeDelta: LONGITUDE_DELTA,
-                }}
-              >
-                <Marker
-                  draggable
-                  title={`${accesType}: ${code}`}
-                  description={`coordonates { ${markerCoordonates.latitude}, ${markerCoordonates.longitude} }`}
-                  key={1}
-                  coordinate={coordonates}
-                  pinColor={'red'} 
-                  onDragEnd={e=>setMarkerCoordonates(e.nativeEvent.coordinate)}
-                >
-                </Marker>
-              </MapView>
-              <TextInput
-                style={{width:370, marginLeft:'auto', marginRight:'auto'}}
-                autoCapitalize
-                placeholder='Hall, portail, ascenseur, escalier...'
-                label="Type d'acces"
-                left={<TextInput.Icon name="boom-gate"/>}
-                onChangeText={(e)=>accesType=e}
-                
-              />
-              <TextInput
-                autoCapitalize='characters'
-                style={{width:370, marginLeft:'auto', marginRight:'auto'}}
-                label="CODE"
-                left={<TextInput.Icon name="lock" />}
-                onChangeText={(e)=>code=e}
-              />
-              <View style={{flexDirection:'row'}}>
-                <Button mode='containedtext' style={{flex:1, }} onPress={modalswitcher}>Annuler</Button>
-                <Button mode='containedtext' style={{flex:1, }} onPress={sendToBase}>Enregistrer</Button>
-              </View>
-          </Modal>
-        </View>
-        
+        }} 
+      >   
+        <AddMarkerModal 
+          showModal={showModal}
+          latitude={latitude}
+          longitude={longitude}
+          latitudeDelta={LATITUDE_DELTA}
+          longitudeDelta={LONGITUDE_DELTA}
+          coordonates={coordonates}
+          setMarkerCoordonates={()=>setMarkerCoordonates()}
+          accesType={accesType}
+          code={code}
+          modalswitcher={modalswitcher}
+          sendToBase={()=>sendToBase()}       
+        /> 
+      </Modal>
+    </View>    
   }else {
     return(
       <Button title='authorisation' 
@@ -165,6 +140,8 @@ export default app=() => {
     )
   }
 }
+
+// ##################### Styles:
 const styles = StyleSheet.create({
   container: {
     ...StyleSheet.absoluteFillObject,
@@ -172,6 +149,7 @@ const styles = StyleSheet.create({
     width,
     alignItems: 'center',
   },
+
   map: {...StyleSheet.absoluteFillObject},
   centeredView: {
     backgroundColor:'rgba(0,0,0,0.75)',
@@ -179,12 +157,14 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+
   map2: {
     marginLeft:'auto',
     marginRight:'auto',
     width:370,
     height:250,
   },
+
   fab: {
     position: 'absolute',
     margin: 16,
