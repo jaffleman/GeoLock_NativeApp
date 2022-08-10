@@ -13,9 +13,11 @@ const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
 
 export default app=() => {
   console.log('STARTER')
+  const [markerList, setMarkerList] = useState([])
   const [showModal,setShowModal] = useState(false)
   const [coordonates, setCoordonates]= useState({"permission":false})
   const [markerCoordonates, setMarkerCoordonates] = useState({longitude:null,latitude:null})
+  const [accesTab, setAccesTab] = useState([])
 
   let code, accesType
   function getPosition(callback) {
@@ -26,7 +28,9 @@ export default app=() => {
       console.log("errors: ", error.code, error.message)
     })
   }
-
+  function getAcces(id) {
+    fetcher('getAllAcces', 'POST', {"id":id}, (e)=>setAccesTab(e) )
+  }
   function modalswitcher(){
     getPosition((coords)=>{
       setCoordonates({
@@ -35,6 +39,14 @@ export default app=() => {
       })
     })
     setShowModal(!showModal)
+  }
+  function findMarker({longitude,latitude}) {
+    const body = {
+      "latitude":latitude,
+      "longitude":longitude,
+      "acces":[{"type": accesType,"code": code}]
+    }
+    fetcher('findAllMarker', 'POST', body, (e)=>setMarkerList(e))
   }
   useEffect(()=>{
     console.log('USE-EFFECT')
@@ -45,6 +57,7 @@ export default app=() => {
             ...coords,
             permission: true
           })
+          findMarker(coords)
         })
       }
     })
@@ -58,6 +71,7 @@ export default app=() => {
   fetcher('create', 'POST', body, (e)=>console.log(e) )
  }
   if(coordonates.permission){
+    console.log('markerList: ', markerList)
     const {latitude,longitude}=coordonates
         return <View style={styles.container}>
           <MapView
@@ -71,6 +85,17 @@ export default app=() => {
               longitudeDelta: LONGITUDE_DELTA,
             }}
           >
+            {
+              markerList.map((marker) => <Marker
+                draggable={false}
+                title={'Marker'}
+                // description={`CODE: `}
+                onPress={()=>getAcces(marker.id)}
+                key={marker.id}
+                coordinate={{longitude:marker.longitude, latitude:marker.latitude}}
+                pinColor={'red'} 
+              />)
+            }
           </MapView>
           <FAB
             icon="plus"
