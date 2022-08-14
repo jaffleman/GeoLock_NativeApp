@@ -1,30 +1,25 @@
 import { REACT_APP_ROUTE } from "@env"
 
-export async function fetcher (route, method, data, callback){
-    if (data.length === -1){
-        if (callback) return callback()
-        else return {data:[]}
-    }else{
-        const url=`${REACT_APP_ROUTE}${route}`
-        console.log(url)
-        const body = JSON.stringify(data)
-        const result = await fetch(url,
-        { 
-            method,
-            mode: 'cors',
-            body,
-            headers:{
-                'Content-Type' : 'application/json'
-            }
-        }).catch(err => {
-            alert('probleme')
-            console.log(err)
-            return {err}
-        })
-        if ("ok" in result){
-            const ladata = await result.json()
-            if (callback) callback(ladata)
-            else return {data:ladata}
-        }else return {err:result.err}
-    }
+export default async function fetcher ({route, method, data, callback}){
+    const url=`${REACT_APP_ROUTE}${route}`
+    const body = JSON.stringify(data)
+    const result = await fetch(url,
+    { 
+        method,
+        mode: 'cors',
+        body,
+        headers:{
+            'Content-Type' : 'application/json'
+        }
+    })
+    .then(result=>result.json())
+    .then(json=>{
+            callback(json)
+    })  
+    .catch(err => {
+        alert('probleme')
+        console.log(err)
+        return {err}
+    })
 }
+

@@ -4,13 +4,13 @@ import Geolocation from 'react-native-geolocation-service';
 import MapView,  { Marker, PROVIDER_GOOGLE } from 'react-native-maps'; // remove PROVIDER_GOOGLE import if not using Google Maps
 import requestLocationPermission from './src/requestLocationPermission'
 import { Button, FAB, Modal, TextInput, Portal } from 'react-native-paper';
-import { fetcher } from './src/functions/fetcher';
+import fetcher from './src/functions/fetcher';
 import AddMarkerModal from './src/components/AddMarkerModal';
 
 // ################## les Constantes:
 const {width, height} = Dimensions.get('window');
 const ASPECT_RATIO = width / height;
-const LATITUDE_DELTA = 0.0022;
+const LATITUDE_DELTA = 0.0010;
 const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
 
 
@@ -19,34 +19,38 @@ export default app=() => {
   console.log('STARTER')
 
   // ################ Stats:
+  const [positionAcces, setPositionAcces] = useState(false)
   const [markerList, setMarkerList] = useState([])
   const [showModal,setShowModal] = useState(false)
-  const [coordonates, setCoordonates]= useState({"permission":false})
+  const [coordonates, setCoordonates]= useState()
   const [markerCoordonates, setMarkerCoordonates] = useState({longitude:null,latitude:null})
   const [accesTab, setAccesTab] = useState([])
   const [spinner, setSpinner] = useState(false)
+  const [dataToFetch, setDataToFetch] = useState({})
 
   // ############### variables simples:
   let code, accesType
 
   //################ ComponentDidMount: 
   useEffect(()=>{
-    console.log('USE-EFFECT')
-    requestLocationPermission((permission)=>{
-      if(permission){
+    requestLocationPermission((agrement)=>{
+      if(agrement){
         getPosition((coords)=>{
-          setCoordonates({
-            ...coords,
-            permission: true
-          })
-          findMarker(coords)
+          setCoordonates(coords)
+          setPositionAcces(agrement)
         })
       }
     })
   },[])
 
-  // ###################### les Fonctions:
+  useEffect(()=>{ 
+    if (Object.keys(dataToFetch).length){
+      setSpinner(true)
+      fetcher(dataToFetch)
+    }
+  },[dataToFetch])
 
+  // ###################### les Fonctions:
   function getPosition(callback) {
     Geolocation.getCurrentPosition(
       ({coords})=>callback(coords),
@@ -54,35 +58,45 @@ export default app=() => {
     )
   }
 
-  function getAcces(id) {fetcher('getAllAcces', 'POST', {"id":id}, (e)=>setAccesTab(e) )}
-
-  function modalswitcher(){
-    getPosition(coords=> setCoordonates({...coords, permission: true}))
-    setShowModal(!showModal)
+  function getMarker(coords=coordonates) {
+    const body = {"latitude":coords.latitude, "longitude":coords.longitude}
+    setDataToFetch({"route":'findAllMarker', "method":'POST', "data":body, "callback":(e)=>{
+      setMarkerList(e)
+      setSpinner(false)
+    }})
   }
 
-  function findMarker({longitude,latitude}) {
-    const body = {"latitude":latitude, "longitude":longitude, "acces":[{"type": accesType,"code": code}]}
-    fetcher('findAllMarker', 'POST', body, (e)=>setMarkerList(e))
+  function getAcces(id) {setDataToFetch({"route":'getAllAcces', "method":'POST', "data":{"id":id}, "callback":(e)=>setAccesTab(e) })}
+
+  function modalSwitcher(){
+    getPosition(coords=> {
+      setCoordonates(coords)
+      setShowModal(!showModal)
+    })
   }
 
   function sendToBase() {
+    if (!code) return alert('vous devez entrer un code!')
     const body = {
       "latitude":markerCoordonates.latitude||coordonates.latitude,
       "longitude":markerCoordonates.longitude||coordonates.longitude,
       "acces":[{"type": accesType,"code": code}]
     }
-    fetcher('create', 'POST', body, setShowModal(false) )
+    setDataToFetch({"route":'create', "method":'POST', "data":body, "callback":setShowModal(false)})
   }
 
   //##################### RENDER:
-  if(coordonates.permission){
+  if(positionAcces){
     const {latitude,longitude}=coordonates
     return <View style={styles.container}>
       <MapView
+        showsCompass={true}
+        showsScale={true}
+        onMapReady={getMarker}
+        onRegionChangeComplete={getMarker}
         followsUserLocation={true}
         showsUserLocation={true}
-        provider={PROVIDER_GOOGLE} // remove if not using Google Maps
+        provider={PROVIDER_GOOGLE}
         style={styles.map}
         initialRegion={{
           latitude,
@@ -93,9 +107,9 @@ export default app=() => {
       >
         {
           markerList.map((marker) => <Marker
+            
             draggable={false}
             title={'Marker'}
-            // description={`CODE: `}
             onPress={()=>getAcces(marker.id)}
             key={marker.id}
             coordinate={{longitude:marker.longitude, latitude:marker.latitude}}
@@ -106,9 +120,9 @@ export default app=() => {
       <FAB
         icon="plus"
         style={styles.fab}
-        onPress={modalswitcher}
+        onPress={()=>modalSwitcher()}
       />
-      <Modal visible={showModal} onDismiss={modalswitcher} style={{justifyContent:'flex-start'}}
+      <Modal visible={showModal} onDismiss={modalSwitcher} style={{justifyContent:'flex-start'}}
         contentContainerStyle={{
             marginLeft:'auto',
             marginRight:'auto',
@@ -117,16 +131,15 @@ export default app=() => {
         }} 
       >   
         <AddMarkerModal 
-          showModal={showModal}
           latitude={latitude}
           longitude={longitude}
           latitudeDelta={LATITUDE_DELTA}
           longitudeDelta={LONGITUDE_DELTA}
           coordonates={coordonates}
-          setMarkerCoordonates={()=>setMarkerCoordonates()}
+          setMarkerCoordonates={setMarkerCoordonates}
           accesType={accesType}
           code={code}
-          modalswitcher={modalswitcher}
+          modalswitcher={modalSwitcher}
           sendToBase={()=>sendToBase()}       
         /> 
       </Modal>
@@ -134,7 +147,7 @@ export default app=() => {
   }else {
     return(
       <Button title='authorisation' 
-        onPress={()=>{requestLocationPermission((permission)=>{setCoordonates({"permission":permission})})}}
+        onPress={()=>{requestLocationPermission((agrement)=>{setPositionAcces(agrement)})}}
         >demander authorisation
       </Button>
     )
@@ -172,9 +185,3 @@ const styles = StyleSheet.create({
     bottom: 10,
   },
 });
-
-
-
-
-
-
