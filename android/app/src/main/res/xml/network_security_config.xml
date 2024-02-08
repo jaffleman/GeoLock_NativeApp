@@ -6,13 +6,13 @@
             <domain includeSubdomains="true">127.0.0.1</domain>
             <domain includeSubdomains="true">10.0.0.1</domain>
             <domain includeSubdomains="true">localhost</domain>
-            <domain includeSubdomains="true">lcdd.jaffleman.tech</domain>
-            <domain includeSubdomains="true">192.168.0.16:8082</domain>
+            <domain includeSubdomains="true">192.168.0.29</domain>
             <domain includeSubdomains="true">api.jaffleman.tech</domain>
 
         </domain-config>
 
         <domain includeSubdomains="true">api.jaffleman.tech/geolock</domain>
+        <domain includeSubdomains="true">192.168.0.29/geolock</domain>
         <trust-anchors>
             <certificates src="@raw/ca"/>
             <certificates src="system"/>
