@@ -1,9 +1,11 @@
-import React from 'react';
-import {StyleSheet, View, Text, Dimensions} from 'react-native';
-import {Button, Modal, TextInput} from 'react-native-paper';
+import {StyleSheet, View} from 'react-native';
 import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps'; // remove PROVIDER_GOOGLE import if not using Google Maps
+import * as React from 'react';
+import {Avatar, Button, Card, Text, TextInput} from 'react-native-paper';
 
+const LeftContent = props => <Avatar.Icon {...props} icon="map-marker" />;
 export default function AddMarkerModal({
+  styles,
   latitude,
   longitude,
   latitudeDelta,
@@ -16,53 +18,60 @@ export default function AddMarkerModal({
   sendToBase,
 }) {
   return (
-    <>
-      <Text
-        selectable={false}
-        style={{
-          color: '#6200ee',
-          fontWeight: '500',
-          fontSize: 15,
-          textAlign: 'center',
-          margin: 10,
-          borderBottomColor: '#a9a9a9',
-          borderBottomWidth: 1,
-          margin: 0,
-          padding: 7,
-        }}>
-        AJOUTER UN CODE D'ACCES
-      </Text>
-      <TextInput
-        style={{width: 370, marginLeft: 'auto', marginRight: 'auto'}}
-        autoCapitalize
-        placeholder="Hall, portail, ascenseur, escalier..."
-        label="Type d'acces"
-        left={<TextInput.Icon name="boom-gate" />}
-        onChangeText={e => (accesType = e)}></TextInput>
-      <TextInput
-        autoCapitalize="characters"
-        style={{width: 370, marginLeft: 'auto', marginRight: 'auto'}}
-        label="CODE"
-        left={<TextInput.Icon name="lock" />}
-        onChangeText={e => (code = e)}></TextInput>
-      <View style={{flexDirection: 'row'}}>
-        <Button mode="containedtext" style={{flex: 1}} onPress={modalswitcher}>
-          Annuler
-        </Button>
-        <Button mode="containedtext" style={{flex: 1}} onPress={sendToBase}>
-          Enregistrer
-        </Button>
-      </View>
-    </>
+    <Card
+      style={
+        {
+          //   top: 768,
+          //backgroundColor: 'yellow',
+          //   borderWidth: 3,
+        }
+      }>
+      <Card.Title
+        title="Ajouter un marker"
+        subtitle="Positionner le marker et renseigner les infos:"
+        left={LeftContent}
+      />
+      <Card.Content>
+        <TextInput
+          label="Adresse"
+          mode="outlined"
+          placeholder="copier/coller l'adresse ici..."
+        />
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-evenly',
+          }}>
+          <TextInput
+            style={{flex: 3}}
+            label="Type"
+            mode="outlined"
+            placeholder="saisisser le type d'acces"
+          />
+          <TextInput
+            style={{flex: 1}}
+            label="Code"
+            mode="outlined"
+            placeholder="#"
+          />
+        </View>
+      </Card.Content>
+
+      <Card.Actions>
+        <Button>Cancel</Button>
+        <Button>Ok</Button>
+      </Card.Actions>
+    </Card>
   );
 }
 
 // ##################### Styles:
-const styles = StyleSheet.create({
+const styles2 = StyleSheet.create({
   map2: {
-    marginLeft: 'auto',
-    marginRight: 'auto',
-    width: 370,
-    height: 250,
+    //position: 'absolute',
+    borderColor: '#6200ee',
+    borderWidth: 1,
+    borderRadius: 10,
+    backgroundColor: '#a9a9',
   },
 });
