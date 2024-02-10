@@ -14,6 +14,7 @@ import requestLocationPermission from './src/requestLocationPermission';
 import {Button, FAB, Modal} from 'react-native-paper';
 import fetcher from './src/functions/fetcher';
 import AddMarkerModal from './src/components/AddMarkerModal';
+import {grey100} from 'react-native-paper/lib/typescript/styles/colors';
 
 // ################## les Constantes:
 const {width, height} = Dimensions.get('window');
@@ -65,6 +66,7 @@ export default app = () => {
   useEffect(() => {
     if (Object.keys(dataToFetch).length) {
       setSpinner(true);
+      setIsConnected(false);
       fetcher(dataToFetch);
     }
   }, [dataToFetch]);
@@ -84,8 +86,8 @@ export default app = () => {
       data: coords,
       callback: e => {
         if (e.isConnected) setMarkerList(e.jData);
-        setIsConnected(e.isConnected);
         setSpinner(false);
+        setIsConnected(e.isConnected);
       },
     });
   }
@@ -180,6 +182,14 @@ export default app = () => {
                 onPress={() => modalSwitcher()}
                 visible={showModal}
               />
+              <FAB
+                loading={spinner}
+                small
+                icon="access-point-network-off"
+                style={styles.networkIcon}
+                onPress={() => {}}
+                visible={!isConnected}
+              />
             </View>
             <View
               style={{
@@ -251,5 +261,11 @@ const styles = StyleSheet.create({
     margin: 16,
     right: 10,
     bottom: 10,
+  },
+  networkIcon: {
+    position: 'absolute',
+    margin: 16,
+    right: 300,
+    bottom: 680,
   },
 });
