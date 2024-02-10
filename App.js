@@ -1,11 +1,22 @@
 import React, {useEffect, useState} from 'react';
-import {StyleSheet, View, Dimensions, Text} from 'react-native';
+
+import {
+  StyleSheet,
+  Keyboard,
+  Platform,
+  View,
+  KeyboardAvoidingView,
+  TouchableWithoutFeedback,
+  Dimensions,
+} from 'react-native';
+
 import Geolocation from 'react-native-geolocation-service';
 import MapView, {Marker, Callout, PROVIDER_GOOGLE} from 'react-native-maps'; // remove PROVIDER_GOOGLE import if not using Google Maps
 import requestLocationPermission from './src/requestLocationPermission';
 import {Button, FAB, Modal} from 'react-native-paper';
 import fetcher from './src/functions/fetcher';
 import AddMarkerModal from './src/components/AddMarkerModal';
+import {grey100} from 'react-native-paper/lib/typescript/styles/colors';
 
 // ################## les Constantes:
 const {width, height} = Dimensions.get('window');
@@ -17,17 +28,27 @@ export default app = () => {
   //console.log('STARTER')
 
   // ################ Stats:
-  const [positionAcces, setPositionAcces] = useState(false);
-  const [markerList, setMarkerList] = useState([]);
-  const [showModal, setShowModal] = useState(false);
-  const [coordonates, setCoordonates] = useState();
+
+  const [positionAcces, setPositionAcces] = useState(false); // indique si l'utilisateur a donné acces a sa position
+
+  // MapView stats
+  const [coordonates, setCoordonates] = useState(); // coordonnées gps de l'utilisateur
+
+  // Marker stats
+  const [markerList, setMarkerList] = useState([]); // Listes des markers retournés par l'api
   const [markerCoordonates, setMarkerCoordonates] = useState({
     longitude: null,
     latitude: null,
   });
-  const [accesTab, setAccesTab] = useState([]);
+
+  const [dataToFetch, setDataToFetch] = useState({}); // données a transmettre à l'api
+
+  // Modal stats
+  const [showModal, setShowModal] = useState(false);
+
+  // const [accesTab, setAccesTab] = useState([]);
   const [spinner, setSpinner] = useState(false);
-  const [dataToFetch, setDataToFetch] = useState({});
+  const [isConnected, setIsConnected] = useState(false);
 
   // ############### variables simples:
   let code, accesType;
@@ -49,6 +70,7 @@ export default app = () => {
   useEffect(() => {
     if (Object.keys(dataToFetch).length) {
       setSpinner(true);
+      setIsConnected(false);
       fetcher(dataToFetch);
     }
   }, [dataToFetch]);
@@ -67,24 +89,24 @@ export default app = () => {
       method: 'POST',
       data: coords,
       callback: e => {
-        setMarkerList(e);
+        if (e.isConnected) setMarkerList(e.jData);
         setSpinner(false);
+        setIsConnected(e.isConnected);
       },
     });
   }
 
-  // function getAcces(id) {
-  //   setDataToFetch({
-  //     route: 'getAllAcces',
-  //     method: 'POST',
-  //     data: {id: id},
-  //     callback: e => {
-  //       setAccesTab(e);
-  //       // console.log(e);
-  //       return e;
-  //     },
-  //   });
-  // }
+  function getAcces(id) {
+    setDataToFetch({
+      route: 'getAllAcces',
+      method: 'POST',
+      data: {id: id},
+      callback: e => {
+        setAccesTab(e);
+      },
+    });
+  }
+
 
   function modalSwitcher() {
     getPosition(coords => {
@@ -118,7 +140,18 @@ export default app = () => {
   if (positionAcces) {
     const {latitude, longitude} = coordonates;
     return (
-      <View style={styles.container}>
+      <KeyboardAvoidingView behavior={'height'} style={{flex: 1}}>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={{flex: 1, flexDirection: 'column'}}>
+            <View
+              style={{
+                flex: showModal ? 2 : 1000,
+                left: 0,
+                right: 0,
+                top: 0,
+                //...styles.container,
+                //height: showModal ? height - 280 : height - 35,
+              }}>
         <MapView
           showsCompass={true}
           showsScale={true}
@@ -176,31 +209,48 @@ export default app = () => {
             );
           })}
         </MapView>
-        <FAB icon="plus" style={styles.fab} onPress={() => modalSwitcher()} />
-        <Modal
-          visible={showModal}
-          onDismiss={modalSwitcher}
-          style={{justifyContent: 'flex-start'}}
-          contentContainerStyle={{
-            marginLeft: 'auto',
-            marginRight: 'auto',
-            backgroundColor: 'white',
-            borderRadius: 10,
-          }}>
-          <AddMarkerModal
-            latitude={latitude}
-            longitude={longitude}
-            latitudeDelta={LATITUDE_DELTA}
-            longitudeDelta={LONGITUDE_DELTA}
-            coordonates={coordonates}
-            setMarkerCoordonates={setMarkerCoordonates}
-            accesType={accesType}
-            code={code}
-            modalswitcher={modalSwitcher}
-            sendToBase={() => sendToBase()}
-          />
-        </Modal>
-      </View>
+              <FAB
+                icon="plus"
+                style={styles.fab}
+                onPress={() => modalSwitcher()}
+                visible={!showModal}
+              />
+              <FAB
+                icon="minus"
+                style={styles.fab}
+                onPress={() => modalSwitcher()}
+                visible={showModal}
+              />
+              <FAB
+                loading={spinner}
+                small
+                icon="access-point-network-off"
+                style={styles.networkIcon}
+                onPress={() => {}}
+                visible={!isConnected}
+              />
+            </View>
+            <View
+              style={{
+                flex: 1,
+              }}>
+              <AddMarkerModal
+                // styles={styles.container}
+                latitude={latitude}
+                longitude={longitude}
+                latitudeDelta={LATITUDE_DELTA}
+                longitudeDelta={LONGITUDE_DELTA}
+                coordonates={coordonates}
+                setMarkerCoordonates={setMarkerCoordonates}
+                accesType={accesType}
+                code={code}
+                modalswitcher={modalSwitcher}
+                sendToBase={() => sendToBase()}
+              />
+            </View>
+          </View>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
     );
   } else {
     return (
@@ -220,10 +270,14 @@ export default app = () => {
 // ##################### Styles:
 const styles = StyleSheet.create({
   container: {
-    ...StyleSheet.absoluteFillObject,
-    height: height - 35,
-    width,
     alignItems: 'center',
+    position: 'relative',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    width,
+    flex: 0,
   },
 
   map: {...StyleSheet.absoluteFillObject},
@@ -246,5 +300,11 @@ const styles = StyleSheet.create({
     margin: 16,
     right: 10,
     bottom: 10,
+  },
+  networkIcon: {
+    position: 'absolute',
+    margin: 16,
+    right: 300,
+    bottom: 680,
   },
 });
