@@ -8,6 +8,7 @@ import {
   KeyboardAvoidingView,
   TouchableWithoutFeedback,
   Dimensions,
+  Text,
 } from 'react-native';
 
 import Geolocation from 'react-native-geolocation-service';
@@ -107,7 +108,6 @@ export default app = () => {
     });
   }
 
-
   function modalSwitcher() {
     getPosition(coords => {
       setCoordonates(coords);
@@ -152,63 +152,63 @@ export default app = () => {
                 //...styles.container,
                 //height: showModal ? height - 280 : height - 35,
               }}>
-        <MapView
-          showsCompass={true}
-          showsScale={true}
-          onMapReady={getMarker}
-          onRegionChangeComplete={getMarker}
-          followsUserLocation={true}
-          showsUserLocation={true}
-          provider={PROVIDER_GOOGLE}
-          style={styles.map}
-          initialRegion={{
-            latitude,
-            longitude,
-            latitudeDelta: LATITUDE_DELTA,
-            longitudeDelta: LONGITUDE_DELTA,
-          }}>
-          {markerList.map(marker => {
-            return (
-              <Marker
-                draggable={false}
-                key={marker.id}
-                coordinate={{
-                  longitude: marker.longitude,
-                  latitude: marker.latitude,
-                }}
-                pinColor={'darkturquoise'}>
-                <Callout
-                  style={{
-                    backgroundColor: '#ffffff',
-                    maxWidth: 500,
-                    mawheight: 200,
-                  }}>
-                  <View style={{borderRadius: 10}}>
-                    <View
-                      style={{
-                        margin: 0,
-                        padding: 0,
-                        backgroundColor: 'bisque',
-                      }}>
-                      <Text
+              <MapView
+                showsCompass={true}
+                showsScale={true}
+                onMapReady={getMarker}
+                onRegionChangeComplete={getMarker}
+                followsUserLocation={true}
+                showsUserLocation={true}
+                provider={PROVIDER_GOOGLE}
+                style={styles.map}
+                initialRegion={{
+                  latitude,
+                  longitude,
+                  latitudeDelta: LATITUDE_DELTA,
+                  longitudeDelta: LONGITUDE_DELTA,
+                }}>
+                {markerList.map(marker => {
+                  return (
+                    <Marker
+                      draggable={false}
+                      key={marker.id}
+                      coordinate={{
+                        longitude: marker.longitude,
+                        latitude: marker.latitude,
+                      }}
+                      pinColor={'darkturquoise'}>
+                      <Callout
                         style={{
-                          margin: 0,
-                          fontWeight: 'bold',
+                          backgroundColor: '#ffffff',
+                          maxWidth: 500,
+                          mawheight: 200,
                         }}>
-                        {marker.adresse}
-                      </Text>
-                    </View>
-                    {marker.accesList.map((acces, i) => (
-                      <Text key={acces.mk * 10 + i}>
-                        {acces.type + ' => ' + acces.code}
-                      </Text>
-                    ))}
-                  </View>
-                </Callout>
-              </Marker>
-            );
-          })}
-        </MapView>
+                        <View style={{borderRadius: 10}}>
+                          <View
+                            style={{
+                              margin: 0,
+                              padding: 0,
+                              backgroundColor: 'bisque',
+                            }}>
+                            <Text
+                              style={{
+                                margin: 0,
+                                fontWeight: 'bold',
+                              }}>
+                              {marker.adresse}
+                            </Text>
+                          </View>
+                          {marker.accesList.map((acces, i) => (
+                            <Text key={acces.mk * 10 + i}>
+                              {acces.type + ' => ' + acces.code}
+                            </Text>
+                          ))}
+                        </View>
+                      </Callout>
+                    </Marker>
+                  );
+                })}
+              </MapView>
               <FAB
                 icon="plus"
                 style={styles.fab}
