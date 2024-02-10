@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
-import {StyleSheet, View, Dimensions} from 'react-native';
+import {StyleSheet, View, Dimensions, Text} from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
-import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps'; // remove PROVIDER_GOOGLE import if not using Google Maps
+import MapView, {Marker, Callout, PROVIDER_GOOGLE} from 'react-native-maps'; // remove PROVIDER_GOOGLE import if not using Google Maps
 import requestLocationPermission from './src/requestLocationPermission';
 import {Button, FAB, Modal} from 'react-native-paper';
 import fetcher from './src/functions/fetcher';
@@ -33,6 +33,7 @@ export default app = () => {
   let code, accesType;
 
   //################ ComponentDidMount:
+  // au chargement de l'application, vérifie l'acces à la géoloc puis récupère la position gps.
   useEffect(() => {
     requestLocationPermission(agrement => {
       if (agrement) {
@@ -44,6 +45,7 @@ export default app = () => {
     });
   }, []);
 
+  //Envoi des demandes a l'api
   useEffect(() => {
     if (Object.keys(dataToFetch).length) {
       setSpinner(true);
@@ -61,7 +63,7 @@ export default app = () => {
 
   function getMarker(coords = coordonates) {
     setDataToFetch({
-      route: 'findAllMarker',
+      route: 'findAllMarkers&Acces',
       method: 'POST',
       data: coords,
       callback: e => {
@@ -71,17 +73,18 @@ export default app = () => {
     });
   }
 
-  function getAcces(id) {
-    setDataToFetch({
-      route: 'getAllAcces',
-      method: 'POST',
-      data: {id: id},
-      callback: e => {
-        setAccesTab(e);
-        console.log(e);
-      },
-    });
-  }
+  // function getAcces(id) {
+  //   setDataToFetch({
+  //     route: 'getAllAcces',
+  //     method: 'POST',
+  //     data: {id: id},
+  //     callback: e => {
+  //       setAccesTab(e);
+  //       // console.log(e);
+  //       return e;
+  //     },
+  //   });
+  // }
 
   function modalSwitcher() {
     getPosition(coords => {
@@ -105,6 +108,12 @@ export default app = () => {
     });
   }
 
+  // function getDescMessage(accesList) {
+  //   accesList.map(acces => (
+  //     <Text> message + acces.type + {' => '} + acces.code </Text>
+  //   ));
+  // }
+
   //##################### RENDER:
   if (positionAcces) {
     const {latitude, longitude} = coordonates;
@@ -125,19 +134,47 @@ export default app = () => {
             latitudeDelta: LATITUDE_DELTA,
             longitudeDelta: LONGITUDE_DELTA,
           }}>
-          {markerList.map(marker => (
-            <Marker
-              draggable={false}
-              title={marker.adresse}
-              onPress={() => getAcces(marker.id)}
-              key={marker.id}
-              coordinate={{
-                longitude: marker.longitude,
-                latitude: marker.latitude,
-              }}
-              pinColor={'red'}
-            />
-          ))}
+          {markerList.map(marker => {
+            return (
+              <Marker
+                draggable={false}
+                key={marker.id}
+                coordinate={{
+                  longitude: marker.longitude,
+                  latitude: marker.latitude,
+                }}
+                pinColor={'darkturquoise'}>
+                <Callout
+                  style={{
+                    backgroundColor: '#ffffff',
+                    maxWidth: 500,
+                    mawheight: 200,
+                  }}>
+                  <View style={{borderRadius: 10}}>
+                    <View
+                      style={{
+                        margin: 0,
+                        padding: 0,
+                        backgroundColor: 'bisque',
+                      }}>
+                      <Text
+                        style={{
+                          margin: 0,
+                          fontWeight: 'bold',
+                        }}>
+                        {marker.adresse}
+                      </Text>
+                    </View>
+                    {marker.accesList.map((acces, i) => (
+                      <Text key={acces.mk * 10 + i}>
+                        {acces.type + ' => ' + acces.code}
+                      </Text>
+                    ))}
+                  </View>
+                </Callout>
+              </Marker>
+            );
+          })}
         </MapView>
         <FAB icon="plus" style={styles.fab} onPress={() => modalSwitcher()} />
         <Modal
