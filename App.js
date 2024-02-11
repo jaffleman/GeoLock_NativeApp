@@ -83,16 +83,18 @@ export default app = () => {
   }
 
   function getMarker(coords = coordonates) {
-    setDataToFetch({
-      route: 'findAllMarkers&Acces',
-      method: 'POST',
-      data: coords,
-      callback: e => {
-        if (e.isConnected) setMarkerList(e.jData);
-        setSpinner(false);
-        setIsConnected(e.isConnected);
-      },
-    });
+    if (!showModal) {
+      setDataToFetch({
+        route: 'findAllMarkers&Acces',
+        method: 'POST',
+        data: coords,
+        callback: e => {
+          if (e.isConnected) setMarkerList(e.jData);
+          setSpinner(false);
+          setIsConnected(e.isConnected);
+        },
+      });
+    }
   }
 
   function modalSwitcher() {
