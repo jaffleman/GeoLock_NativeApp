@@ -16,6 +16,8 @@ import requestLocationPermission from './src/requestLocationPermission';
 import {Button, FAB, Modal} from 'react-native-paper';
 import fetcher from './src/functions/fetcher';
 import AddMarkerModal from './src/components/AddMarkerModal';
+import geolock from './src/functions/geolock';
+import MarkerManager from './src/components/MarkerManager';
 
 // ################## les Constantes:
 const {width, height} = Dimensions.get('window');
@@ -57,7 +59,7 @@ export default app = () => {
   useEffect(() => {
     requestLocationPermission(agrement => {
       if (agrement) {
-        getPosition(coords => {
+        geolock.getPosition(coords => {
           setCoordonates(coords);
           setPositionAcces(agrement);
         });
@@ -75,50 +77,34 @@ export default app = () => {
   }, [dataToFetch]);
 
   // ###################### les Fonctions:
-  function getPosition(callback) {
-    Geolocation.getCurrentPosition(
-      ({coords}) => callback(coords),
-      error => console.log('errors: ', error.code, error.message),
+
+  const getMarker = (coords = coordonates) =>
+    geolock.getMarker(
+      coords,
+      showModal,
+      setDataToFetch,
+      setMarkerList,
+      setSpinner,
+      setIsConnected,
     );
-  }
 
-  function getMarker(coords = coordonates) {
-    if (!showModal) {
-      setDataToFetch({
-        route: 'findAllMarkers&Acces',
-        method: 'POST',
-        data: coords,
-        callback: e => {
-          if (e.isConnected) setMarkerList(e.jData);
-          setSpinner(false);
-          setIsConnected(e.isConnected);
-        },
-      });
-    }
-  }
+  const modalSwitcher = () =>
+    geolock.modalSwitcher(
+      setMarkerList,
+      setCoordonates,
+      setShowModal,
+      showModal,
+    );
 
-  function modalSwitcher() {
-    getPosition(coords => {
-      setMarkerList([]);
-      setCoordonates(coords);
-      setShowModal(!showModal);
-    });
-  }
-
-  function sendToBase() {
-    if (!code) return alert('vous devez entrer un code!');
-    const body = {
-      latitude: markerCoordonates.latitude || coordonates.latitude,
-      longitude: markerCoordonates.longitude || coordonates.longitude,
-      acces: [{type: accesType, code: code}],
-    };
-    setDataToFetch({
-      route: 'create',
-      method: 'POST',
-      data: body,
-      callback: setShowModal(false),
-    });
-  }
+  const sendToBase = () =>
+    geolock.sendToBase(
+      code,
+      markerCoordonates,
+      coordonates,
+      accesType,
+      setDataToFetch,
+      setShowModal,
+    );
 
   //##################### RENDER:
   if (positionAcces) {
@@ -138,7 +124,9 @@ export default app = () => {
                 showsCompass={false}
                 showsScale={false}
                 onMapReady={getMarker}
-                onRegionChangeComplete={getMarker}
+                onRegionChangeComplete={info => {
+                  getMarker(info);
+                }}
                 followsUserLocation={true}
                 showsUserLocation={true}
                 provider={PROVIDER_GOOGLE}
@@ -149,55 +137,10 @@ export default app = () => {
                   latitudeDelta: LATITUDE_DELTA,
                   longitudeDelta: LONGITUDE_DELTA,
                 }}>
-                {markerList.length > 0 ? (
-                  markerList.map(marker => {
-                    return (
-                      <Marker
-                        draggable={false}
-                        key={marker.id}
-                        coordinate={{
-                          longitude: marker.longitude,
-                          latitude: marker.latitude,
-                        }}
-                        pinColor={'darkturquoise'}>
-                        <Callout
-                          style={{
-                            backgroundColor: '#ffffff',
-                            maxWidth: 500,
-                            mawheight: 200,
-                          }}>
-                          <View style={{borderRadius: 10}}>
-                            <View
-                              style={{
-                                backgroundColor: 'bisque',
-                              }}>
-                              <Text
-                                style={{
-                                  fontWeight: 'bold',
-                                }}>
-                                {marker.adresse}
-                              </Text>
-                            </View>
-                            {marker.accesList.map((acces, i) => (
-                              <Text key={acces.mk * 10 + i}>
-                                {acces.type + ' => ' + acces.code}
-                              </Text>
-                            ))}
-                          </View>
-                        </Callout>
-                      </Marker>
-                    );
-                  })
-                ) : (
-                  <Marker
-                    draggable={true}
-                    coordinate={{
-                      longitude: coordonates.longitude,
-                      latitude: coordonates.latitude,
-                    }}
-                    pinColor={'red'}
-                  />
-                )}
+                <MarkerManager
+                  markerList={markerList}
+                  coordonates={coordonates}
+                />
               </MapView>
               <FAB
                 icon="plus"
