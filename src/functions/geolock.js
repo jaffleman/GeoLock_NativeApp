@@ -18,12 +18,13 @@ export default geolock = {
     setSpinner,
     setIsConnected,
   ) => {
-    if (!showModal) {
+    if (showModal == false) {
       setDataToFetch({
         route: 'findAllMarkers&Acces',
         method: 'POST',
         data: coords,
         callback: e => {
+          console.log('e : ' + e);
           if (e.isConnected) setMarkerList(e.jData);
           setSpinner(false);
           setIsConnected(e.isConnected);
@@ -32,12 +33,21 @@ export default geolock = {
     }
   },
 
-  modalSwitcher: (setMarkerList, setCoordonates, setShowModal, showModal) => {
+  showModalSwitcher: (
+    setMarkerList,
+    setCoordonates,
+    setShowModal,
+    showModal,
+  ) => {
+    setShowModal(true);
     geolock.getPosition(coords => {
       setMarkerList([]);
       setCoordonates(coords);
-      setShowModal(!showModal);
     });
+  },
+  hideModalSwitcher: (setMarkerList, setShowModal) => {
+    setMarkerList([]);
+    setShowModal(false);
   },
 
   sendToBase: (

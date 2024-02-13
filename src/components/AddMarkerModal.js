@@ -14,7 +14,6 @@ export default function AddMarkerModal({
   setMarkerCoordonates,
   accesType,
   code,
-  modalswitcher,
   sendToBase,
 }) {
   return (

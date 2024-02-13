@@ -62,6 +62,7 @@ export default app = () => {
         geolock.getPosition(coords => {
           setCoordonates(coords);
           setPositionAcces(agrement);
+          getMarker();
         });
       }
     });
@@ -78,7 +79,7 @@ export default app = () => {
 
   // ###################### les Fonctions:
 
-  const getMarker = (coords = coordonates) =>
+  const getMarker = (coords = coordonates, showModal = false) =>
     geolock.getMarker(
       coords,
       showModal,
@@ -88,13 +89,19 @@ export default app = () => {
       setIsConnected,
     );
 
-  const modalSwitcher = () =>
-    geolock.modalSwitcher(
+  const showModalSwitcher = () => {
+    geolock.showModalSwitcher(
       setMarkerList,
       setCoordonates,
       setShowModal,
       showModal,
     );
+  };
+
+  const hideModalSwitcher = () => {
+    getMarker();
+    geolock.hideModalSwitcher(setMarkerList, setShowModal);
+  };
 
   const sendToBase = () =>
     geolock.sendToBase(
@@ -107,6 +114,7 @@ export default app = () => {
     );
 
   //##################### RENDER:
+  console.log('DEBUT');
   if (positionAcces) {
     const {latitude, longitude} = coordonates;
     return (
@@ -123,6 +131,7 @@ export default app = () => {
               <MapView
                 showsCompass={false}
                 showsScale={false}
+                onLayout={getMarker}
                 onMapReady={getMarker}
                 onRegionChangeComplete={info => {
                   getMarker(info);
@@ -143,17 +152,12 @@ export default app = () => {
                 />
               </MapView>
               <FAB
-                icon="plus"
+                icon={showModal ? 'minus' : 'plus'}
                 style={styles.fab}
-                onPress={() => modalSwitcher()}
-                visible={!showModal}
+                onPress={showModal ? hideModalSwitcher : showModalSwitcher}
+                //visible={!showModal}
               />
-              <FAB
-                icon="minus"
-                style={styles.fab}
-                onPress={() => modalSwitcher()}
-                visible={showModal}
-              />
+
               <FAB
                 loading={spinner}
                 small
@@ -177,7 +181,6 @@ export default app = () => {
                 setMarkerCoordonates={setMarkerCoordonates}
                 accesType={accesType}
                 code={code}
-                modalswitcher={modalSwitcher}
                 sendToBase={() => sendToBase()}
               />
             </View>
