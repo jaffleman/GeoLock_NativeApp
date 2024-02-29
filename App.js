@@ -8,9 +8,9 @@ import {
   TouchableWithoutFeedback,
   Dimensions,
   Text,
+  requireNativeComponent,
 } from 'react-native';
 
-import Geolocation from 'react-native-geolocation-service';
 import MapView, {Marker, Callout, PROVIDER_GOOGLE} from 'react-native-maps'; // remove PROVIDER_GOOGLE import if not using Google Maps
 import requestLocationPermission from './src/requestLocationPermission';
 import {Button, FAB, Modal} from 'react-native-paper';
@@ -18,11 +18,10 @@ import fetcher from './src/functions/fetcher';
 import AddMarkerModal from './src/components/AddMarkerModal';
 import geolock from './src/functions/geolock';
 import MarkerManager from './src/components/MarkerManager';
-
 // ################## les Constantes:
 const {width, height} = Dimensions.get('window');
 const ASPECT_RATIO = width / height;
-const LATITUDE_DELTA = 0.01;
+const LATITUDE_DELTA = 0.005;
 const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
 
 export default app = () => {
@@ -52,25 +51,29 @@ export default app = () => {
   const [isConnected, setIsConnected] = useState(false);
 
   // ############### variables simples:
-  let code, accesType;
 
   //################ ComponentDidMount:
   // au chargement de l'application, vérifie l'acces à la géoloc puis récupère la position gps.
-  useEffect(() => {
-    requestLocationPermission(agrement => {
-      if (agrement) {
-        geolock.getPosition(coords => {
-          setCoordonates(coords);
-          setPositionAcces(agrement);
-          getMarker();
-        });
-      }
-    });
-  }, []);
+  // useEffect(() => {
+  //   console.log('===============> useEffect I <================')
+  //   requestLocationPermission(agrement => {
+  //     if (agrement) {
+  //       geolock.getPosition(coords => {
+  //         setCoordonates(coords);
+  //         setPositionAcces(agrement);
+  //         getMarker();
+  //       });
+  //     }
+  //   });
+  // }, []);
 
   //Envoi des demandes a l'api
   useEffect(() => {
-    if (Object.keys(dataToFetch).length) {
+    console.log('===============> useEffect II : dataToFetch <================')
+    const dataLength = Object.keys(dataToFetch).length;
+    console.log(dataLength)
+    if (dataLength) {
+      console.log('useEffect II data to fetch:', JSON.stringify(dataToFetch), '++++++++++++++++++++++++')
       setSpinner(true);
       setIsConnected(false);
       fetcher(dataToFetch);
@@ -103,19 +106,22 @@ export default app = () => {
     geolock.hideModalSwitcher(setMarkerList, setShowModal);
   };
 
-  const sendToBase = () =>
+  const sendToBase = (e) => {
+    console.log('le code est :  ' +  JSON.stringify(e))
     geolock.sendToBase(
-      code,
+      adresse= e.adresse,
+      code=e.code,
+      accesType=e.accesType,
       markerCoordonates,
       coordonates,
-      accesType,
       setDataToFetch,
       setShowModal,
     );
+  }
 
   //##################### RENDER:
-  console.log('DEBUT');
   if (positionAcces) {
+    console.log('===========> PART I <===============');
     const {latitude, longitude} = coordonates;
     return (
       <KeyboardAvoidingView behavior={'height'} style={{flex: 1}}>
@@ -124,22 +130,21 @@ export default app = () => {
             <View
               style={{
                 flex: showModal ? 2 : 1000,
-                left: 0,
-                right: 0,
-                top: 0,
               }}>
               <MapView
                 showsCompass={false}
-                showsScale={false}
-                onLayout={getMarker}
-                onMapReady={getMarker}
-                onRegionChangeComplete={info => {
-                  getMarker(info);
-                }}
-                followsUserLocation={true}
-                showsUserLocation={true}
+                //onMapReady={getMarker}
+                onRegionChangeComplete={info => getMarker(info)}
+                showsUserLocation
                 provider={PROVIDER_GOOGLE}
-                style={styles.map}
+                style={{flex:1}}
+                loadingEnabled
+                // onUserLocationChange={info => {
+                //   getMarker(info)}}
+                // onRegionChange={info => {
+                //   getMarker(info);
+                // }}
+                followsUserLocation={true}
                 initialRegion={{
                   latitude,
                   longitude,
@@ -172,16 +177,7 @@ export default app = () => {
                 flex: 1,
               }}>
               <AddMarkerModal
-                // styles={styles.container}
-                latitude={latitude}
-                longitude={longitude}
-                latitudeDelta={LATITUDE_DELTA}
-                longitudeDelta={LONGITUDE_DELTA}
-                coordonates={coordonates}
-                setMarkerCoordonates={setMarkerCoordonates}
-                accesType={accesType}
-                code={code}
-                sendToBase={() => sendToBase()}
+                sendToBase={(e)=>sendToBase(e)}
               />
             </View>
           </View>
@@ -189,6 +185,17 @@ export default app = () => {
       </KeyboardAvoidingView>
     );
   } else {
+    console.log('===========> PART II <===============');
+    requestLocationPermission(agrement => {
+      console.log('on n a pas encore l agrement')
+      if (agrement) {
+        geolock.getPosition(coords => {
+          setCoordonates(coords);
+          setPositionAcces(agrement);
+          getMarker();
+        });
+      }
+    });
     return (
       <Button
         title="authorisation"

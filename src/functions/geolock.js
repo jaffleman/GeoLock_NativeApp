@@ -1,14 +1,10 @@
-import {LOCAL_APP_ROUTE2} from '@env';
-import {REACT_APP_ROUTE} from '@env';
 import Geolocation from 'react-native-geolocation-service';
 
 export default geolock = {
   getPosition: callback => {
     Geolocation.getCurrentPosition(
       ({coords}) => callback(coords),
-      error => console.log('errors: ', error.code, error.message),
-    );
-  },
+      error => console.log('errors: ', error.code, error.message));},
 
   getMarker: (
     coords,
@@ -16,68 +12,49 @@ export default geolock = {
     setDataToFetch,
     setMarkerList,
     setSpinner,
-    setIsConnected,
-  ) => {
+    setIsConnected,) => {
     if (showModal == false) {
       setDataToFetch({
         route: 'findAllMarkers&Acces',
         method: 'POST',
         data: coords,
         callback: e => {
-          console.log('e : ' + e);
+          console.log('e : ' + JSON.stringify(e));
           if (e.isConnected) setMarkerList(e.jData);
           setSpinner(false);
-          setIsConnected(e.isConnected);
-        },
-      });
-    }
-  },
+          setIsConnected(e.isConnected);},});}},
 
-  showModalSwitcher: (
-    setMarkerList,
-    setCoordonates,
-    setShowModal,
-    showModal,
-  ) => {
-    setShowModal(true);
-    geolock.getPosition(coords => {
-      setMarkerList([]);
-      setCoordonates(coords);
-    });
-  },
+  showModalSwitcher: (setMarkerList, setCoordonates, setShowModal) => {
+    setMarkerList([]);
+    geolock.getPosition(coords => setCoordonates(coords));
+    setShowModal(true);},
+
   hideModalSwitcher: (setMarkerList, setShowModal) => {
     setMarkerList([]);
-    setShowModal(false);
-  },
+    setShowModal(false);},
 
   sendToBase: (
+    adresse,
     code,
+    accesType,
     markerCoordonates,
     coordonates,
-    accesType,
     setDataToFetch,
-    setShowModal,
-  ) => {
+    setShowModal,) => {
     if (!code) return alert('vous devez entrer un code!');
-    const body = {
-      latitude: markerCoordonates.latitude || coordonates.latitude,
-      longitude: markerCoordonates.longitude || coordonates.longitude,
-      acces: [{type: accesType, code}],
-    };
     setDataToFetch({
       route: 'create',
       method: 'POST',
-      data: body,
-      callback: setShowModal(false),
-    });
-  },
+      data: {
+        adresse: adresse,
+        latitude: markerCoordonates.latitude || coordonates.latitude,
+        longitude: markerCoordonates.longitude || coordonates.longitude,
+        acces: [{type: accesType, code}],},
+      callback: setShowModal(false),});
+    },
 
   requestLocationPermission: (agrement, setCoordonates, setPositionAcces) => {
     if (agrement) {
       geolock.getPosition(coords => {
         setCoordonates(coords);
-        setPositionAcces(agrement);
-      });
-    }
-  },
-};
+        setPositionAcces(agrement);});}},};

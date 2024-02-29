@@ -4,9 +4,10 @@ import {Marker, Callout} from 'react-native-maps'; // remove PROVIDER_GOOGLE imp
 
 export default MarkerManager = ({markerList, coordonates}) => {
   if (markerList.length > 0) {
-    return markerList.map(marker => {
+    return markerList.map((marker, index) => {
       return (
         <Marker
+        zIndex={-index}
           draggable={false}
           key={marker.id}
           coordinate={{

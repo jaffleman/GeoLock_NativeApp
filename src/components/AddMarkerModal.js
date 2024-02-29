@@ -5,17 +5,9 @@ import {Avatar, Button, Card, Text, TextInput} from 'react-native-paper';
 
 const LeftContent = props => <Avatar.Icon {...props} icon="map-marker" />;
 export default function AddMarkerModal({
-  styles,
-  latitude,
-  longitude,
-  latitudeDelta,
-  longitudeDelta,
-  coordonates,
-  setMarkerCoordonates,
-  accesType,
-  code,
   sendToBase,
 }) {
+  let   adresse='',  accesType='', code='';
   return (
     <Card
       style={
@@ -35,6 +27,7 @@ export default function AddMarkerModal({
           label="Adresse"
           mode="outlined"
           placeholder="copier/coller l'adresse ici..."
+          onChangeText={text =>adresse = text}
         />
         <View
           style={{
@@ -46,19 +39,21 @@ export default function AddMarkerModal({
             label="Type"
             mode="outlined"
             placeholder="saisisser le type d'acces"
+            onChangeText={type => accesType=type}
           />
           <TextInput
             style={{flex: 1}}
             label="Code"
             mode="outlined"
             placeholder="#"
+            onChangeText={codeText => code = codeText}
           />
         </View>
       </Card.Content>
 
       <Card.Actions>
         <Button>Cancel</Button>
-        <Button>Ok</Button>
+        <Button onPress={()=>sendToBase({accesType, code, adresse})}>Ok</Button>
       </Card.Actions>
     </Card>
   );
