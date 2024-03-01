@@ -2,9 +2,11 @@ import React from 'react';
 import {View, Text} from 'react-native';
 import {Marker, Callout} from 'react-native-maps'; // remove PROVIDER_GOOGLE import if not using Google Maps
 
-export default MarkerManager = ({markerList, coordonates}) => {
-  if (markerList.length > 0) {
-    return markerList.map((marker, index) => {
+export default MarkerManager = ({constantes}) => {
+  console.log('markerManager: '+ JSON.stringify(constantes.markerList))
+  if (constantes.markerList.length > 0) {
+    return constantes.markerList.map((marker, index) => {
+      console.log('index: '+index)
       return (
         <Marker
         zIndex={-index}
@@ -48,8 +50,8 @@ export default MarkerManager = ({markerList, coordonates}) => {
       <Marker
         draggable={true}
         coordinate={{
-          longitude: coordonates.longitude,
-          latitude: coordonates.latitude,
+          longitude: constantes.coordonates.longitude,
+          latitude: constantes.coordonates.latitude,
         }}
         pinColor={'red'}
       />

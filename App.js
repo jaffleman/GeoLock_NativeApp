@@ -29,26 +29,42 @@ export default app = () => {
 
   // ################ Stats:
 
+  const [constantes, setConstantes] = useState({
+    positionAcces:false,
+    coordonates:{
+      speed: 0.08591323345899582,
+      heading: 0,
+      altitude: 90.20000457763672,
+      accuracy: 13.402999877929688,
+      longitude: 3.3952627,
+      altitudeAccuracy: 1,
+      latitude: 48.758611},
+    markerList:[],
+    showModal:false,
+    spinner:false,
+    isConnected:true,
+  })
+
   const [positionAcces, setPositionAcces] = useState(false); // indique si l'utilisateur a donné acces a sa position
 
   // MapView stats
-  const [coordonates, setCoordonates] = useState(); // coordonnées gps de l'utilisateur
+  // const [coordonates, setCoordonates] = useState(); // coordonnées gps de l'utilisateur
 
   // Marker stats
-  const [markerList, setMarkerList] = useState([]); // Listes des markers retournés par l'api
-  const [markerCoordonates, setMarkerCoordonates] = useState({
-    longitude: null,
-    latitude: null,
-  });
+  // const [markerList, setMarkerList] = useState([]); // Listes des markers retournés par l'api
+  // const [markerCoordonates, setMarkerCoordonates] = useState({
+  //   longitude: null,
+  //   latitude: null,
+  // });
 
   const [dataToFetch, setDataToFetch] = useState({}); // données a transmettre à l'api
 
   // Modal stats
-  const [showModal, setShowModal] = useState(false);
+  // const [showModal, setShowModal] = useState(false);
 
   // const [accesTab, setAccesTab] = useState([]);
-  const [spinner, setSpinner] = useState(false);
-  const [isConnected, setIsConnected] = useState(false);
+  // const [spinner, setSpinner] = useState(false);
+  // const [isConnected, setIsConnected] = useState(false);
 
   // ############### variables simples:
 
@@ -74,62 +90,61 @@ export default app = () => {
     console.log(dataLength)
     if (dataLength) {
       console.log('useEffect II data to fetch:', JSON.stringify(dataToFetch), '++++++++++++++++++++++++')
-      setSpinner(true);
-      setIsConnected(false);
+      setConstantes({...constantes, spinner:true, isConnected:false,})
       fetcher(dataToFetch);
     }
   }, [dataToFetch]);
 
   // ###################### les Fonctions:
 
-  const getMarker = (coords = coordonates, showModal = false) =>
+  const getMarker = (info) =>{
     geolock.getMarker(
-      coords,
-      showModal,
+      info,
+      constantes,
+      setConstantes,
       setDataToFetch,
-      setMarkerList,
-      setSpinner,
-      setIsConnected,
-    );
+    );}
 
   const showModalSwitcher = () => {
     geolock.showModalSwitcher(
-      setMarkerList,
-      setCoordonates,
-      setShowModal,
-      showModal,
+      constantes,
+      setConstantes,
     );
   };
 
   const hideModalSwitcher = () => {
-    getMarker();
-    geolock.hideModalSwitcher(setMarkerList, setShowModal);
+    geolock.hideModalSwitcher(      constantes,
+      setConstantes,);
+      setTimeout(() => {
+        getMarker();
+      }, 4000);
   };
 
   const sendToBase = (e) => {
     console.log('le code est :  ' +  JSON.stringify(e))
+    console.log('coordonates: '+ coordonates)
     geolock.sendToBase(
       adresse= e.adresse,
       code=e.code,
       accesType=e.accesType,
-      markerCoordonates,
-      coordonates,
+      constantes,
+      setConstantes,
       setDataToFetch,
-      setShowModal,
     );
   }
 
   //##################### RENDER:
-  if (positionAcces) {
+  if (constantes.positionAcces) {
     console.log('===========> PART I <===============');
-    const {latitude, longitude} = coordonates;
+    console.log('markerList: '+ JSON.stringify(constantes.markerList))
+    const {latitude, longitude} = constantes.coordonates;
     return (
       <KeyboardAvoidingView behavior={'height'} style={{flex: 1}}>
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View style={{flex: 1, flexDirection: 'column'}}>
             <View
               style={{
-                flex: showModal ? 2 : 1000,
+                flex: constantes.showModal ? 2 : 1000,
               }}>
               <MapView
                 showsCompass={false}
@@ -152,24 +167,23 @@ export default app = () => {
                   longitudeDelta: LONGITUDE_DELTA,
                 }}>
                 <MarkerManager
-                  markerList={markerList}
-                  coordonates={coordonates}
+                  constantes={constantes}
                 />
               </MapView>
               <FAB
-                icon={showModal ? 'minus' : 'plus'}
+                icon={constantes.showModal ? 'minus' : 'plus'}
                 style={styles.fab}
-                onPress={showModal ? hideModalSwitcher : showModalSwitcher}
+                onPress={constantes.showModal ? hideModalSwitcher : showModalSwitcher}
                 //visible={!showModal}
               />
 
               <FAB
-                loading={spinner}
+                loading={constantes.spinner}
                 small
                 icon="access-point-network-off"
                 style={styles.networkIcon}
                 onPress={() => {}}
-                visible={!isConnected}
+                visible={!constantes.isConnected}
               />
             </View>
             <View
@@ -189,11 +203,9 @@ export default app = () => {
     requestLocationPermission(agrement => {
       console.log('on n a pas encore l agrement')
       if (agrement) {
-        geolock.getPosition(coords => {
-          setCoordonates(coords);
-          setPositionAcces(agrement);
-          getMarker();
-        });
+        setConstantes({...constantes, positionAcces:true})
+         geolock.getPosition(constantes,setConstantes,setDataToFetch);
+        
       }
     });
     return (
