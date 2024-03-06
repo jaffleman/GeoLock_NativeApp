@@ -5,10 +5,10 @@ import {Avatar, Button, Card, Text, TextInput} from 'react-native-paper';
 
 const LeftContent = props => <Avatar.Icon {...props} icon="map-marker" />;
 export default function AddMarkerModal({sendToBase, hideModalSwitcher}) {
-  let   adresse='',  accesType='', code='';
-  const inition = () => {adresse = '';
-    accesType = '';
-    code = '';}
+  const [adresse, setAdresse] = React.useState('');
+  const [accesType, setAccesType] = React.useState('');
+  const [code, setCode] = React.useState('');
+  
   return (
     <Card
       style={
@@ -25,11 +25,12 @@ export default function AddMarkerModal({sendToBase, hideModalSwitcher}) {
       />
       <Card.Content>
         <TextInput
+          style={{height:35}}
           value={adresse}
           label="Adresse"
           mode="outlined"
           placeholder="copier/coller l'adresse ici..."
-          onChangeText={text =>adresse = text}
+          onChangeText={text =>setAdresse(text)}
         />
         <View
           style={{
@@ -37,20 +38,21 @@ export default function AddMarkerModal({sendToBase, hideModalSwitcher}) {
             justifyContent: 'space-evenly',
           }}>
           <TextInput
-            style={{flex: 3}}
+            style={{flex: 3, height:35}}
             value={accesType}
             label="Type"
             mode="outlined"
             placeholder="saisisser le type d'acces"
-            onChangeText={type => accesType=type}
+            onChangeText={type => setAccesType(type)}
           />
           <TextInput
+            autoCapitalize='characters'
             value={code}
-            style={{flex: 1}}
+            style={{flex: 1, height:35}}
             label="Code"
             mode="outlined"
             placeholder="#"
-            onChangeText={codeText => code = codeText}
+            onChangeText={codeText => setCode(codeText)}
           />
         </View>
       </Card.Content>

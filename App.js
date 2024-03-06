@@ -87,7 +87,7 @@ export default app = () => {
           <View style={{flex: 1, flexDirection: 'column'}}>
             <View
               style={{
-                flex: constantes.showModal ? 2 : 1000,
+                flex: constantes.showModal ? 3 : 1000,
               }}>
               <MapView
                 showsCompass={false}
