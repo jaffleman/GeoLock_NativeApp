@@ -4,10 +4,11 @@ import * as React from 'react';
 import {Avatar, Button, Card, Text, TextInput} from 'react-native-paper';
 
 const LeftContent = props => <Avatar.Icon {...props} icon="map-marker" />;
-export default function AddMarkerModal({
-  sendToBase,
-}) {
+export default function AddMarkerModal({sendToBase, hideModalSwitcher}) {
   let   adresse='',  accesType='', code='';
+  const inition = () => {adresse = '';
+    accesType = '';
+    code = '';}
   return (
     <Card
       style={
@@ -24,6 +25,7 @@ export default function AddMarkerModal({
       />
       <Card.Content>
         <TextInput
+          value={adresse}
           label="Adresse"
           mode="outlined"
           placeholder="copier/coller l'adresse ici..."
@@ -36,12 +38,14 @@ export default function AddMarkerModal({
           }}>
           <TextInput
             style={{flex: 3}}
+            value={accesType}
             label="Type"
             mode="outlined"
             placeholder="saisisser le type d'acces"
             onChangeText={type => accesType=type}
           />
           <TextInput
+            value={code}
             style={{flex: 1}}
             label="Code"
             mode="outlined"
@@ -52,8 +56,8 @@ export default function AddMarkerModal({
       </Card.Content>
 
       <Card.Actions>
-        <Button>Cancel</Button>
-        <Button onPress={()=>sendToBase({accesType, code, adresse})}>Ok</Button>
+        <Button  onPress={()=>{inition();hideModalSwitcher();}}>Cancel </Button>
+        <Button onPress={()=>{sendToBase({accesType, code, adresse}); inition()}}>Ok</Button>
       </Card.Actions>
     </Card>
   );

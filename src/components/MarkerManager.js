@@ -3,7 +3,7 @@ import {View, Text} from 'react-native';
 import {Marker, Callout} from 'react-native-maps'; // remove PROVIDER_GOOGLE import if not using Google Maps
 
 export default MarkerManager = ({constantes}) => {
-  if (constantes.markerList.length > 0 && !constantes.showModal) {
+  if (!constantes.showModal) {
     return constantes.markerList.map((marker, index) => {
       return (
         <Marker

@@ -57,12 +57,14 @@ export default geolock = {
     
 
   sendToBase: (
-    constantes,
-    setConstantes,
     adresse,
     code,
     accesType,
+    constantes,
+    setConstantes,
     setDataToFetch,) => {
+      console.log('sendToBase() ')
+      console.log('constantes : '+ JSON.stringify(constantes))
       const {showModal,coordonates} = constantes;
     if (!code) return alert('vous devez entrer un code!');
     setDataToFetch({
@@ -70,8 +72,8 @@ export default geolock = {
       method: 'POST',
       data: {
         adresse: adresse,
-        latitude: coordonates.latitude,
-        longitude: coordonates.longitude,
+        latitude: constantes.coordonates.latitude,
+        longitude: constantes.coordonates.longitude,
         acces: [{type: accesType, code}],},
       callback: e => {
         console.log('e : ' + JSON.stringify(e));

@@ -38,16 +38,6 @@ export default app = () => {
     isConnected:true,
   })
 
-  // const formFetch = async (dataToFetch)=>{
-  //   const dataLength = Object.keys(dataToFetch).length;
-  //   if (dataLength) {
-  //     console.log('useEffect II: data to fetch:', JSON.stringify(dataToFetch), '++++++++++++++++++++++++')
-  //     setConstantes({...constantes, spinner:true, isConnected:false,})
-  //     return await fetcher(dataToFetch);
-  //   }
-  // }
-
-  // const [positionAcces, setPositionAcces] = useState(false); // indique si l'utilisateur a donné acces a sa position
   const [dataToFetch, setDataToFetch] = useState({}); // données a transmettre à l'api
   useEffect(()=>{
     console.log('=======================> useEffect [] <=======================')
@@ -74,7 +64,7 @@ export default app = () => {
     geolock.getMarker(info,constantes,setConstantes,setDataToFetch,);}
 
   const showModalSwitcher = () => {
-    setConstantes({...constantes, showModal:true, markerList:[]})};
+    setConstantes({...constantes, showModal:true})};
 
   const hideModalSwitcher = () => {
     geolock.getMarker(constantes.coordonates,{...constantes, showModal:false},setConstantes,setDataToFetch,);};
@@ -89,8 +79,6 @@ export default app = () => {
   //##################### RENDER:
   if (constantes.positionAcces) {
     console.log('===========> PART II <===============');
-    // console.log('markerList: '+ JSON.stringify(constantes.markerList))
-    // console.log('coords: '+JSON.stringify(constantes.coordonates))
     const {latitude, longitude} = constantes.coordonates;
     return (
       <KeyboardAvoidingView behavior={'height'} style={{flex: 1}}>
@@ -98,7 +86,7 @@ export default app = () => {
           <View style={{flex: 1, flexDirection: 'column'}}>
             <View
               style={{
-                flex: constantes.showModal ? 2 : 1000,
+                flex: constantes.showModal ? 1 : 1000,
               }}>
               <MapView
                 showsCompass={false}
@@ -138,6 +126,7 @@ export default app = () => {
                 flex: 1,
               }}>
               <AddMarkerModal
+                hideModalSwitcher = {hideModalSwitcher}
                 sendToBase={(e)=>sendToBase(e)}
               />
             </View>
