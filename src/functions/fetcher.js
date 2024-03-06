@@ -12,7 +12,7 @@ export default async function fetcher({route, method, data, callback}) {
 
   var fetchData = {};
   var isConnected = true;
-
+  console.log('Envoie du Fetch...');
   // ipv6
   fetchData = await fetch(`${REACT_APP_ROUTE}${route}`, lePaquet).catch(
     err => (isConnected = false),
@@ -26,6 +26,8 @@ export default async function fetcher({route, method, data, callback}) {
     );
   }
   var jData = {};
-  if (isConnected) jData = await fetchData.json();
+  if (isConnected) {
+    console.log('Fetch reponse ok...')
+    jData = await fetchData.json();}
   callback({isConnected, jData});
 }

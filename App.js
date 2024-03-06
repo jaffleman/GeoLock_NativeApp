@@ -25,118 +25,72 @@ const LATITUDE_DELTA = 0.005;
 const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
 
 export default app = () => {
-  //console.log('STARTER')
+  console.log('******************  STARTER  **********************')
 
   // ################ Stats:
 
   const [constantes, setConstantes] = useState({
     positionAcces:false,
-    coordonates:{
-      speed: 0.08591323345899582,
-      heading: 0,
-      altitude: 90.20000457763672,
-      accuracy: 13.402999877929688,
-      longitude: 3.3952627,
-      altitudeAccuracy: 1,
-      latitude: 48.758611},
+    coordonates:{},
     markerList:[],
     showModal:false,
-    spinner:false,
+    spinner:true,
     isConnected:true,
   })
 
-  const [positionAcces, setPositionAcces] = useState(false); // indique si l'utilisateur a donné acces a sa position
+  // const formFetch = async (dataToFetch)=>{
+  //   const dataLength = Object.keys(dataToFetch).length;
+  //   if (dataLength) {
+  //     console.log('useEffect II: data to fetch:', JSON.stringify(dataToFetch), '++++++++++++++++++++++++')
+  //     setConstantes({...constantes, spinner:true, isConnected:false,})
+  //     return await fetcher(dataToFetch);
+  //   }
+  // }
 
-  // MapView stats
-  // const [coordonates, setCoordonates] = useState(); // coordonnées gps de l'utilisateur
-
-  // Marker stats
-  // const [markerList, setMarkerList] = useState([]); // Listes des markers retournés par l'api
-  // const [markerCoordonates, setMarkerCoordonates] = useState({
-  //   longitude: null,
-  //   latitude: null,
-  // });
-
+  // const [positionAcces, setPositionAcces] = useState(false); // indique si l'utilisateur a donné acces a sa position
   const [dataToFetch, setDataToFetch] = useState({}); // données a transmettre à l'api
-
-  // Modal stats
-  // const [showModal, setShowModal] = useState(false);
-
-  // const [accesTab, setAccesTab] = useState([]);
-  // const [spinner, setSpinner] = useState(false);
-  // const [isConnected, setIsConnected] = useState(false);
-
-  // ############### variables simples:
-
-  //################ ComponentDidMount:
-  // au chargement de l'application, vérifie l'acces à la géoloc puis récupère la position gps.
-  // useEffect(() => {
-  //   console.log('===============> useEffect I <================')
-  //   requestLocationPermission(agrement => {
-  //     if (agrement) {
-  //       geolock.getPosition(coords => {
-  //         setCoordonates(coords);
-  //         setPositionAcces(agrement);
-  //         getMarker();
-  //       });
-  //     }
-  //   });
-  // }, []);
-
-  //Envoi des demandes a l'api
+  useEffect(()=>{
+    console.log('=======================> useEffect [] <=======================')
+    requestLocationPermission().then(agrement=>{
+      console.log('agrement: '+agrement)
+      geolock.getPosition({ ...constantes }, setConstantes, setDataToFetch);
+      console.log('=======================> FIN useEffect [] <=======================')
+    })},[])
   useEffect(() => {
-    console.log('===============> useEffect II : dataToFetch <================')
+    console.log('=======================> useEffect [dataToFetch] <=======================')
     const dataLength = Object.keys(dataToFetch).length;
-    console.log(dataLength)
     if (dataLength) {
-      console.log('useEffect II data to fetch:', JSON.stringify(dataToFetch), '++++++++++++++++++++++++')
-      setConstantes({...constantes, spinner:true, isConnected:false,})
+      setConstantes({...constantes, spinner:true, isConnected:false,});
       fetcher(dataToFetch);
-    }
-  }, [dataToFetch]);
+    } 
+    console.log('=======================> FIN useEffect [dataToFetch] <=======================')
+    
+   }, [dataToFetch]);
 
   // ###################### les Fonctions:
 
   const getMarker = (info) =>{
-    geolock.getMarker(
-      info,
-      constantes,
-      setConstantes,
-      setDataToFetch,
-    );}
+    console.log('coordonates: '+ JSON.stringify(info))
+    geolock.getMarker(info,constantes,setConstantes,setDataToFetch,);}
 
   const showModalSwitcher = () => {
-    geolock.showModalSwitcher(
-      constantes,
-      setConstantes,
-    );
-  };
+    setConstantes({...constantes, showModal:true, markerList:[]})};
 
   const hideModalSwitcher = () => {
-    geolock.hideModalSwitcher(      constantes,
-      setConstantes,);
-      setTimeout(() => {
-        getMarker();
-      }, 4000);
-  };
+    geolock.getMarker(constantes.coordonates,{...constantes, showModal:false},setConstantes,setDataToFetch,);};
 
   const sendToBase = (e) => {
-    console.log('le code est :  ' +  JSON.stringify(e))
-    console.log('coordonates: '+ coordonates)
     geolock.sendToBase(
       adresse= e.adresse,
-      code=e.code,
-      accesType=e.accesType,
-      constantes,
-      setConstantes,
-      setDataToFetch,
-    );
-  }
+      code= e.code,
+      accesType= e.accesType,
+      constantes,setConstantes,setDataToFetch,);}
 
   //##################### RENDER:
   if (constantes.positionAcces) {
-    console.log('===========> PART I <===============');
-    console.log('markerList: '+ JSON.stringify(constantes.markerList))
+    console.log('===========> PART II <===============');
+    // console.log('markerList: '+ JSON.stringify(constantes.markerList))
+    // console.log('coords: '+JSON.stringify(constantes.coordonates))
     const {latitude, longitude} = constantes.coordonates;
     return (
       <KeyboardAvoidingView behavior={'height'} style={{flex: 1}}>
@@ -148,17 +102,11 @@ export default app = () => {
               }}>
               <MapView
                 showsCompass={false}
-                //onMapReady={getMarker}
                 onRegionChangeComplete={info => getMarker(info)}
                 showsUserLocation
                 provider={PROVIDER_GOOGLE}
                 style={{flex:1}}
                 loadingEnabled
-                // onUserLocationChange={info => {
-                //   getMarker(info)}}
-                // onRegionChange={info => {
-                //   getMarker(info);
-                // }}
                 followsUserLocation={true}
                 initialRegion={{
                   latitude,
@@ -174,7 +122,6 @@ export default app = () => {
                 icon={constantes.showModal ? 'minus' : 'plus'}
                 style={styles.fab}
                 onPress={constantes.showModal ? hideModalSwitcher : showModalSwitcher}
-                //visible={!showModal}
               />
 
               <FAB
@@ -199,27 +146,15 @@ export default app = () => {
       </KeyboardAvoidingView>
     );
   } else {
-    console.log('===========> PART II <===============');
-    requestLocationPermission(agrement => {
-      console.log('on n a pas encore l agrement')
-      if (agrement) {
-        setConstantes({...constantes, positionAcces:true})
-         geolock.getPosition(constantes,setConstantes,setDataToFetch);
-        
-      }
-    });
+    console.log('===========> PART I <===============');
     return (
-      <Button
-        title="authorisation"
-        onPress={() => {
-          requestLocationPermission(agrement => {
-            setPositionAcces(agrement);
-          });
-        }}>
-        demander authorisation
-      </Button>
-    );
-  }
+      <View style={{flex: 1, flexDirection: 'column'}}>
+        <FAB
+        loading={constantes.spinner}
+        small
+        icon="access-point-network-off"
+        style={styles.networkIcon}/>
+      </View>);}
 };
 
 // ##################### Styles:

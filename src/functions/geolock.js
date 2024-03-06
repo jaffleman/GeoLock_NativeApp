@@ -1,48 +1,59 @@
 import Geolocation from 'react-native-geolocation-service';
 function getMerkerExt(info,constantes,setConstantes,setDataToFetch) {
-  const {
-    showModal,} = constantes;
-    console.log('getMerkerExt valeur de constantes: '+ JSON.stringify(constantes))
-    console.log('getMerkerExt valeur de info: '+JSON.stringify(info))
-if (showModal === false) {
-  setDataToFetch({
-    route: 'findAllMarkers&Acces',
-    method: 'POST',
-    data: info,
-    callback: e => {
-      console.log('e : ' + JSON.stringify(e));
-      console.log('e.isConnected: '+e.isConnected)
-      if (e.isConnected) setConstantes({...constantes,
-        markerList:[...e.jData],
-        positionAcces:true,
-        spinner:false,
-      isConnected:e.isConnected})
-    },});}  
+  console.log('get Merker ext')
+  const {showModal,} = constantes;
+  console.log('showModal:'+showModal)
+  if (showModal === false) {
+    setDataToFetch({
+      route: 'findAllMarkers&Acces',
+      method: 'POST',
+      data: info,
+      callback: (e) => {
+        console.log('reponse du fetch...')
+        if (e.isConnected){ 
+          console.log('SetDataToFetch...');
+          setConstantes({...constantes,
+          coordonates:{...info},
+          markerList:[...e.jData],
+          positionAcces:true,
+          spinner:false,
+        isConnected:true})}
+      },});
+  }  
 }
 
 
 export default geolock = {
-  getPosition: (constantes, setConstantes, setDataToFetch=()=>{})=> {
-    
+  getPosition: (constantes, setConstantes, setDataToFetch)=> { 
+    console.log('get position');
     Geolocation.getCurrentPosition(
       ({coords}) => {
-        constantes = {...constantes, coordonates:{...coords}}
+        // setConstantes({...constantes, coordonates:{...coords}})
         console.log('on est ici dans getPosition!')
-        getMerkerExt(constantes,setConstantes,setDataToFetch)
+        // setConstantes({...constantes, coordonates:{...coords},positionAcces:true})
+        getMerkerExt(coords,constantes, setConstantes, setDataToFetch)
         },
-      error => console.log('errors: ', error.code, error.message));},
+      error => console.log('errors: ', error.code, error.message));
+    },
 
   getMarker: (info, constantes, setConstantes, setDataToFetch)=>{getMerkerExt(info, constantes, setConstantes, setDataToFetch)},
 
-  showModalSwitcher: (constantes, setConstantes,) => {
-    Geolocation.getCurrentPosition(
-      ({coords}) => {
-        console.log('les coordonnés du showModalSwitcher: '+ JSON.stringify(coords))
-        setConstantes({...constantes, coordonates:{...coords}, showModal:true, markerList:[]})},
-      error => console.log('errors: ', error.code, error.message));},
+  // showModalSwitcher: (constantes, setConstantes,) => {
+  //   Geolocation.getCurrentPosition(
+  //     ({coords}) => {
+  //       console.log('les coordonnés du showModalSwitcher: '+ JSON.stringify(coords))
+  //       setConstantes({...constantes, showModal:true, markerList:[]})},
+  //     error => console.log('errors: ', error.code, error.message));},
 
-  hideModalSwitcher: (constantes, setConstantes) => {
-    setConstantes({...constantes, markerList:[], showModal:false})},
+  // hideModalSwitcher: (constantes, setConstantes, setDataToFetch) => {
+  //   Geolocation.getCurrentPosition(
+  //     ({coords}) => {
+  //       // setConstantes({...constantes, coordonates:{...coords}})
+  //       console.log('on est ici dans getPosition!')
+  //       // setConstantes({...constantes, coordonates:{...coords},positionAcces:true})
+  //       getMerkerExt(coords,{...constantes, showModal:false}, setConstantes, setDataToFetch)
+  //       },
+  //     error => console.log('errors: ', error.code, error.message))},
     
 
   sendToBase: (
