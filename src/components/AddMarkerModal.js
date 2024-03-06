@@ -58,8 +58,8 @@ export default function AddMarkerModal({sendToBase, hideModalSwitcher}) {
       </Card.Content>
 
       <Card.Actions>
-        <Button  onPress={()=>{inition();hideModalSwitcher();}}>Cancel </Button>
-        <Button onPress={()=>{sendToBase({accesType, code, adresse}); inition()}}>Ok</Button>
+        <Button  onPress={()=>{hideModalSwitcher();}}>Cancel </Button>
+        <Button onPress={()=>{sendToBase({accesType, code, adresse});}}>Ok</Button>
       </Card.Actions>
     </Card>
   );
