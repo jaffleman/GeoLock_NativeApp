@@ -67,6 +67,7 @@ export default app = () => {
     setConstantes({...constantes, showModal:true})};
 
   const hideModalSwitcher = () => {
+    Keyboard.dismiss();
     geolock.getMarker(constantes.coordonates,{...constantes, showModal:false},setConstantes,setDataToFetch,);};
 
   const sendToBase = (e) => {
@@ -81,12 +82,12 @@ export default app = () => {
     console.log('===========> PART II <===============');
     const {latitude, longitude} = constantes.coordonates;
     return (
-      <KeyboardAvoidingView behavior={'height'} style={{flex: 1}}>
+      <KeyboardAvoidingView keyboardVerticalOffset={150} behavior={'height'} style={{flex: 1}}>
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View style={{flex: 1, flexDirection: 'column'}}>
             <View
               style={{
-                flex: constantes.showModal ? 1 : 1000,
+                flex: constantes.showModal ? 2 : 1000,
               }}>
               <MapView
                 showsCompass={false}
