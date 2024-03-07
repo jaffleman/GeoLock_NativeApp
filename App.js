@@ -16,12 +16,13 @@ import requestLocationPermission from './src/requestLocationPermission';
 import {Button, FAB, Modal} from 'react-native-paper';
 import fetcher from './src/functions/fetcher';
 import AddMarkerModal from './src/components/AddMarkerModal';
+import InfoMarkerModal from './src/components/InfoMarkerModal';
 import geolock from './src/functions/geolock';
 import MarkerManager from './src/components/MarkerManager';
 // ################## les Constantes:
 const {width, height} = Dimensions.get('window');
 const ASPECT_RATIO = width / height;
-const LATITUDE_DELTA = 0.005;
+const LATITUDE_DELTA = 0.0025;
 const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
 
 export default app = () => {
@@ -33,6 +34,7 @@ export default app = () => {
     positionAcces:false,
     coordonates:{},
     markerList:[],
+    focusedMarkerInfo:{adresse:'',id:-1, accesList:[]},
     showModal:false,
     spinner:true,
     isConnected:true,
@@ -63,7 +65,7 @@ export default app = () => {
     geolock.getMarker(info,constantes,setConstantes,setDataToFetch,);}
 
   const showModalSwitcher = () => {
-    setConstantes({...constantes, showModal:true})};
+    setConstantes({...constantes, showModal:true,  focusedMarkerInfo:{adresse:'',id:-1, accesList:[]}})};
 
   const hideModalSwitcher = () => {
     Keyboard.dismiss();
@@ -81,12 +83,20 @@ export default app = () => {
     console.log('===========> PART II <===============');
     const {latitude, longitude} = constantes.coordonates;
     return (
-      <KeyboardAvoidingView keyboardVerticalOffset={150} behavior={'height'} style={{flex: 1}}>
+      <KeyboardAvoidingView keyboardVerticalOffset={30} behavior={'height'} style={{flex: 1}}>
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View style={{flex: 1, flexDirection: 'column'}}>
+          <View
+              style={{
+                flex: constantes.focusedMarkerInfo.accesList.length>0?0:1,
+              }}>
+              <InfoMarkerModal
+                markerInfo = {{...constantes.focusedMarkerInfo}}
+              />
+            </View>
             <View
               style={{
-                flex: constantes.showModal ? 3 : 1000,
+                flex: 1000,
               }}>
               <MapView
               customMapStyle={mapStyle}
@@ -105,6 +115,7 @@ export default app = () => {
                 }}>
                 <MarkerManager
                   constantes={constantes}
+                  setConstantes={setConstantes}
                 />
               </MapView>
               <FAB
@@ -124,7 +135,7 @@ export default app = () => {
             </View>
             <View
               style={{
-                flex: 1,
+                flex: constantes.showModal?0:1,
               }}>
               <AddMarkerModal
                 showModal = {constantes.showModal}
