@@ -4,10 +4,20 @@ import * as React from 'react';
 import {Avatar, Button, Card, Text, TextInput} from 'react-native-paper';
 
 const LeftContent = props => <Avatar.Icon {...props} icon="map-marker" />;
-export default function AddMarkerModal({sendToBase, hideModalSwitcher}) {
+export default function AddMarkerModal({showModal, sendToBase, hideModalSwitcher}) {
   const [adresse, setAdresse] = React.useState('');
   const [accesType, setAccesType] = React.useState('');
   const [code, setCode] = React.useState('');
+  const adresseRef = React.useRef(null)
+  const accesTypeRef = React.useRef(null)
+  const codeRef = React.useRef(null)
+  React.useEffect(()=>{
+    if(showModal) adresseRef.current.focus();
+    else{
+      setAdresse('');
+      setAccesType('');
+      setCode('');}
+  },[showModal])
   
   return (
     <Card
@@ -19,12 +29,17 @@ export default function AddMarkerModal({sendToBase, hideModalSwitcher}) {
         }
       }>
       <Card.Title
+
         title="Ajouter un marker"
         subtitle="Positionner le marker et renseigner les infos:"
         left={LeftContent}
       />
       <Card.Content>
         <TextInput
+          returnKeyType='next'
+          onSubmitEditing={()=>accesTypeRef.current.focus()}
+          blurOnSubmit={false}
+          ref={adresseRef}
           style={{height:35}}
           value={adresse}
           label="Adresse"
@@ -38,6 +53,10 @@ export default function AddMarkerModal({sendToBase, hideModalSwitcher}) {
             justifyContent: 'space-evenly',
           }}>
           <TextInput
+          returnKeyType='next'
+          onSubmitEditing={()=>codeRef.current.focus()}
+          blurOnSubmit={false}
+            ref={accesTypeRef}
             style={{flex: 3, height:35}}
             value={accesType}
             label="Type"
@@ -46,6 +65,9 @@ export default function AddMarkerModal({sendToBase, hideModalSwitcher}) {
             onChangeText={type => setAccesType(type)}
           />
           <TextInput
+          returnKeyType='send'
+          onSubmitEditing={()=>sendToBase({accesType, code, adresse})}
+            ref={codeRef}
             autoCapitalize='characters'
             value={code}
             style={{flex: 1, height:35}}
@@ -57,10 +79,6 @@ export default function AddMarkerModal({sendToBase, hideModalSwitcher}) {
         </View>
       </Card.Content>
 
-      <Card.Actions>
-        <Button  onPress={()=>{hideModalSwitcher();}}>Cancel </Button>
-        <Button onPress={()=>{sendToBase({accesType, code, adresse});}}>Ok</Button>
-      </Card.Actions>
     </Card>
   );
 }

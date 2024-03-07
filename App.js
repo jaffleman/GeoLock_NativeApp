@@ -60,7 +60,6 @@ export default app = () => {
   // ###################### les Fonctions:
 
   const getMarker = (info) =>{
-    console.log('coordonates: '+ JSON.stringify(info))
     geolock.getMarker(info,constantes,setConstantes,setDataToFetch,);}
 
   const showModalSwitcher = () => {
@@ -128,6 +127,7 @@ export default app = () => {
                 flex: 1,
               }}>
               <AddMarkerModal
+                showModal = {constantes.showModal}
                 hideModalSwitcher = {hideModalSwitcher}
                 sendToBase={(e)=>sendToBase(e)}
               />
