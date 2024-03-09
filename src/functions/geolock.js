@@ -16,7 +16,9 @@ function getMarkerExt(info,constantes,setConstantes,setDataToFetch) {
           markerList:[...e.jData],
           positionAcces:true,
           spinner:false,
-          isConnected:true})}},});}}
+          isConnected:true})}},});}
+  else{
+    setConstantes({...constantes, coordonates:{...info}})}}
 
 
 export default geolock = {
