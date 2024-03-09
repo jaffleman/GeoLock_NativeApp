@@ -1,5 +1,4 @@
 import React, {useEffect, useState} from 'react';
-
 import {
   StyleSheet,
   Keyboard,
@@ -7,13 +6,11 @@ import {
   KeyboardAvoidingView,
   TouchableWithoutFeedback,
   Dimensions,
-  Text,
-  requireNativeComponent,
 } from 'react-native';
 
-import MapView, {Marker, Callout, PROVIDER_GOOGLE} from 'react-native-maps'; // remove PROVIDER_GOOGLE import if not using Google Maps
+import MapView, {PROVIDER_GOOGLE} from 'react-native-maps'; // remove PROVIDER_GOOGLE import if not using Google Maps
 import requestLocationPermission from './src/requestLocationPermission';
-import {Button, FAB, Modal} from 'react-native-paper';
+import {FAB} from 'react-native-paper';
 import fetcher from './src/functions/fetcher';
 import AddMarkerModal from './src/components/AddMarkerModal';
 import InfoMarkerModal from './src/components/InfoMarkerModal';
@@ -37,32 +34,27 @@ export default app = () => {
     focusedMarkerInfo:{adresse:'',id:-1, accesList:[]},
     showModal:false,
     spinner:true,
-    isConnected:true,
-  })
+    isConnected:true,})
 
   const [dataToFetch, setDataToFetch] = useState({}); // données a transmettre à l'api
-  useEffect(()=>{
+
+  useEffect(()=>{ //composantDidMount
     console.log('=======================> useEffect [] <=======================')
     requestLocationPermission().then(agrement=>{
       console.log('agrement: '+agrement)
       geolock.getPosition({ ...constantes }, setConstantes, setDataToFetch);
-      console.log('=======================> FIN useEffect [] <=======================')
-    })},[])
+      console.log('=======================> FIN useEffect [] <=======================')})},[])
+
   useEffect(() => {
     console.log('=======================> useEffect [dataToFetch] <=======================')
-    const dataLength = Object.keys(dataToFetch).length;
-    if (dataLength) {
+    if (Object.keys(dataToFetch).length) {
       setConstantes({...constantes, spinner:true, isConnected:false,});
-      fetcher(dataToFetch);
-    } 
-    console.log('=======================> FIN useEffect [dataToFetch] <=======================')
-    
-   }, [dataToFetch]);
+      fetcher(dataToFetch);} 
+    console.log('=======================> FIN useEffect [dataToFetch] <=======================')}, [dataToFetch]);
 
   // ###################### les Fonctions:
 
-  const getMarker = (info) =>{
-    geolock.getMarker(info,constantes,setConstantes,setDataToFetch,);}
+  const getMarker = info => geolock.getMarker(info,constantes,setConstantes,setDataToFetch,);
 
   const showModalSwitcher = () => {
     setConstantes({...constantes, showModal:true,  focusedMarkerInfo:{adresse:'',id:-1, accesList:[]}})};
@@ -73,10 +65,10 @@ export default app = () => {
 
   const sendToBase = (e) => {
     geolock.sendToBase(
-      adresse= e.adresse,
-      code= e.code,
-      accesType= e.accesType,
-      constantes,setConstantes,setDataToFetch,);}
+      adresse = e.adresse,
+      code = e.code,
+      accesType = e.accesType,
+      constantes, setConstantes, setDataToFetch,);}
 
   //##################### RENDER:
   if (constantes.positionAcces) {
@@ -86,20 +78,11 @@ export default app = () => {
       <KeyboardAvoidingView keyboardVerticalOffset={30} behavior={'height'} style={{flex: 1}}>
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View style={{flex: 1, flexDirection: 'column'}}>
-          <View
-              style={{
-                flex: constantes.focusedMarkerInfo.accesList.length>0?0:1,
-              }}>
-              <InfoMarkerModal
-                markerInfo = {{...constantes.focusedMarkerInfo}}
-              />
-            </View>
-            <View
-              style={{
-                flex: 1000,
-              }}>
+            <View style={{flex: constantes.focusedMarkerInfo.accesList.length>0?0:1,}}>
+              <InfoMarkerModal markerInfo = {{...constantes.focusedMarkerInfo}}/></View>
+            <View style={{flex: 1000,}}>
               <MapView
-              customMapStyle={mapStyle}
+                customMapStyle={mapStyle}
                 showsCompass={false}
                 onRegionChangeComplete={info => getMarker(info)}
                 showsUserLocation
@@ -111,18 +94,12 @@ export default app = () => {
                   latitude,
                   longitude,
                   latitudeDelta: LATITUDE_DELTA,
-                  longitudeDelta: LONGITUDE_DELTA,
-                }}>
-                <MarkerManager
-                  constantes={constantes}
-                  setConstantes={setConstantes}
-                />
-              </MapView>
+                  longitudeDelta: LONGITUDE_DELTA,}}>
+                <MarkerManager constantes={constantes} setConstantes={setConstantes}/></MapView>
               <FAB
                 icon={constantes.showModal ? 'minus' : 'plus'}
                 style={styles.fab}
-                onPress={constantes.showModal ? hideModalSwitcher : showModalSwitcher}
-              />
+                onPress={constantes.showModal ? hideModalSwitcher : showModalSwitcher}/>
 
               <FAB
                 loading={constantes.spinner}
@@ -130,33 +107,20 @@ export default app = () => {
                 icon="access-point-network-off"
                 style={styles.networkIcon}
                 onPress={() => {}}
-                visible={!constantes.isConnected}
-              />
-            </View>
-            <View
-              style={{
-                flex: constantes.showModal?0:1,
-              }}>
+                visible={!constantes.isConnected}/></View>
+            <View style={{flex: constantes.showModal?0:1,}}>
               <AddMarkerModal
                 showModal = {constantes.showModal}
                 hideModalSwitcher = {hideModalSwitcher}
-                sendToBase={(e)=>sendToBase(e)}
-              />
-            </View>
-          </View>
-        </TouchableWithoutFeedback>
-      </KeyboardAvoidingView>
-    );
-  } else {
+                sendToBase={(e)=>sendToBase(e)}/></View></View></TouchableWithoutFeedback></KeyboardAvoidingView>);} 
+  else {
     console.log('===========> PART I <===============');
-    return (
-      <View style={{flex: 1, flexDirection: 'column'}}>
-        <FAB
+    return <View style={{flex: 1, flexDirection: 'column'}}>
+      <FAB
         loading={constantes.spinner}
         small
         icon="access-point-network-off"
-        style={styles.networkIcon}/>
-      </View>);}
+        style={styles.networkIcon}/></View>}
 };
 
 // ##################### Styles:

@@ -1,12 +1,10 @@
 import React from 'react';
-import {View, Text} from 'react-native';
-import {Marker, Callout} from 'react-native-maps'; // remove PROVIDER_GOOGLE import if not using Google Maps
+import {Marker} from 'react-native-maps'; // remove PROVIDER_GOOGLE import if not using Google Maps
 
 export default MarkerManager = ({constantes, setConstantes}) => {
   if (!constantes.showModal) {
-    return constantes.markerList.map((marker, index) => {
-      return (
-        <Marker
+    return constantes.markerList.map(
+      (marker, index) => <Marker
           zIndex={-index}
           draggable={false}
           key={marker.id}
@@ -14,9 +12,7 @@ export default MarkerManager = ({constantes, setConstantes}) => {
             longitude: marker.longitude,
             latitude: marker.latitude,}}
           onPress={()=>setConstantes({...constantes, focusedMarkerInfo:{adresse: marker.adresse, id:marker.id, accesList:[...marker.accesList]}})}
-          pinColor={marker.id==constantes.focusedMarkerInfo.id?'yellow':'darkturquoise'}>
-          
-        </Marker>);});} 
+          pinColor={marker.id==constantes.focusedMarkerInfo.id?'yellow':'darkturquoise'}></Marker>);} 
   else if (constantes.showModal) {
     return (
       <Marker

@@ -1,7 +1,6 @@
 import {StyleSheet, View} from 'react-native';
-import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps'; // remove PROVIDER_GOOGLE import if not using Google Maps
 import * as React from 'react';
-import {Avatar, Button, Card, Text, TextInput} from 'react-native-paper';
+import {Avatar, Card, TextInput} from 'react-native-paper';
 
 const LeftContent = props => <Avatar.Icon {...props} icon="map-marker" />;
 export default function AddMarkerModal({showModal, sendToBase, hideModalSwitcher}) {
@@ -16,24 +15,14 @@ export default function AddMarkerModal({showModal, sendToBase, hideModalSwitcher
     else{
       setAdresse('');
       setAccesType('');
-      setCode('');}
-  },[showModal])
+      setCode('');}},[showModal])
   
   return (
-    <Card
-      style={
-        {
-          //   top: 768,
-          //backgroundColor: 'yellow',
-          //   borderWidth: 3,
-        }
-      }>
+    <Card>
       <Card.Title
-
         title="Ajouter un marker"
         subtitle="Positionner le marker et renseigner les infos:"
-        left={LeftContent}
-      />
+        left={LeftContent}/>
       <Card.Content>
         <TextInput
           returnKeyType='next'
@@ -45,28 +34,23 @@ export default function AddMarkerModal({showModal, sendToBase, hideModalSwitcher
           label="Adresse"
           mode="outlined"
           placeholder="copier/coller l'adresse ici..."
-          onChangeText={text =>setAdresse(text)}
-        />
+          onChangeText={text =>setAdresse(text)}/>
         <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-evenly',
-          }}>
+          style={{flexDirection: 'row',justifyContent: 'space-evenly',}}>
           <TextInput
-          returnKeyType='next'
-          onSubmitEditing={()=>codeRef.current.focus()}
-          blurOnSubmit={false}
+            returnKeyType='next'
+            onSubmitEditing={()=>codeRef.current.focus()}
+            blurOnSubmit={false}
             ref={accesTypeRef}
             style={{flex: 3, height:35}}
             value={accesType}
             label="Type"
             mode="outlined"
             placeholder="saisisser le type d'acces"
-            onChangeText={type => setAccesType(type)}
-          />
+            onChangeText={type => setAccesType(type)}/>
           <TextInput
-          returnKeyType='send'
-          onSubmitEditing={()=>sendToBase({accesType, code, adresse})}
+            returnKeyType='send'
+            onSubmitEditing={()=>sendToBase({accesType, code, adresse})}
             ref={codeRef}
             autoCapitalize='characters'
             value={code}
@@ -74,13 +58,7 @@ export default function AddMarkerModal({showModal, sendToBase, hideModalSwitcher
             label="Code"
             mode="outlined"
             placeholder="#"
-            onChangeText={codeText => setCode(codeText)}
-          />
-        </View>
-      </Card.Content>
-
-    </Card>
-  );
+            onChangeText={codeText => setCode(codeText)}/></View></Card.Content></Card>);
 }
 
 // ##################### Styles:

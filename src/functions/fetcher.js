@@ -5,27 +5,21 @@ export default async function fetcher({route, method, data, callback}) {
   const lePaquet = {
     method,
     body: JSON.stringify(data),
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  };
+    headers: {'Content-Type': 'application/json'}};
 
-  var fetchData = {};
-  var isConnected = true;
+  let fetchData = {};
+  let isConnected = true;
   console.log('Envoie du Fetch...');
   // ipv6
-  fetchData = await fetch(`${REACT_APP_ROUTE}${route}`, lePaquet).catch(
-    err => (isConnected = false),
-  );
-
+  fetchData = await fetch(`${REACT_APP_ROUTE}${route}`, lePaquet)
+    .catch(err => {isConnected = false; console.log('echec envoi IpV6')});
   if (!isConnected) {
     isConnected = true;
-    // ipv6
-    fetchData = await fetch(`${LOCAL_APP_ROUTE2}${route}`, lePaquet).catch(
-      err => (isConnected = false),
-    );
+    // ipv4
+    fetchData = await fetch(`${LOCAL_APP_ROUTE2}${route}`, lePaquet)
+    .catch( err => {(isConnected = false); console.log('echec envoi IpV4')});
   }
-  var jData = {};
+  let jData = {};
   if (isConnected) {
     console.log('Fetch reponse ok...')
     jData = await fetchData.json();}
