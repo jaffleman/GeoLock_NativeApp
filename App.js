@@ -80,16 +80,16 @@ export default app = () => {
     console.log('===========> PART II <===============');
     console.log('coordonates de MapView: '+JSON.stringify(constantes.coordonates))
     console.log('selected marker id : '+focusedMarker.id)
-    const {latitude, longitude} = constantes.coordonates;
+    const showInfoMarker = focusedMarker.id==-1?false:true;
     return (
       <KeyboardAvoidingView keyboardVerticalOffset={30} behavior={'height'} style={{flex: 1}}>
         <TouchableWithoutFeedback onPress={()=>{
           Keyboard.dismiss;
-          if(focusedMarker.id!=-1) setFocusedMarker({adresse:'',id:-1, accesList:[]})}}>
+          if(showInfoMarker) setFocusedMarker({adresse:'',id:-1, accesList:[]})}}>
           <View style={{flex: 1, flexDirection: 'column'}}>
-            <View style={{flex: focusedMarker.accesList.length>0?0:1,}}>
-              <InfoMarkerModal markerInfo = {{...focusedMarker}}/></View>
             <View style={{flex: 1000,}}>
+            <View  style={{position:'absolute', display:showInfoMarker?'flex':'none', top:0, left:0, right:0, zIndex:1}}>
+              <InfoMarkerModal markerInfo = {{...focusedMarker}}/></View>
               <MapView
                 customMapStyle={mapStyle}
                 showsCompass={false}
