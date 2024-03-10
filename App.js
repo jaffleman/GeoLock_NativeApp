@@ -30,16 +30,17 @@ export default app = () => {
   const [constantes, setConstantes] = useState({
     positionAcces:false,
     coordonates:{
+      longitude:2.347079571336508,
+      latitude:48.855188003520624,
       latitudeDelta: LATITUDE_DELTA,
       longitudeDelta: LONGITUDE_DELTA,},
     markerList:[],
-    focusedMarkerInfo:{adresse:'',id:-1, accesList:[]},
     showModal:false,
     spinner:true,
     isConnected:true,})
 
   const [dataToFetch, setDataToFetch] = useState({}); // données a transmettre à l'api
-
+  const [focusedMarker, setFocusedMarker] = useState({adresse:'',id:-1, accesList:[]})
   useEffect(()=>{ //composantDidMount
     console.log('=======================> useEffect [] <=======================')
     requestLocationPermission().then(agrement=>{
@@ -60,7 +61,8 @@ export default app = () => {
     geolock.getMarker({...constantes, coordonates:{...info}},setConstantes,setDataToFetch,)};
 
   const showModalSwitcher = () => {
-    setConstantes({...constantes, showModal:true,  focusedMarkerInfo:{adresse:'',id:-1, accesList:[]}})};
+    setFocusedMarker({adresse:'',id:-1, accesList:[]})
+    setConstantes({...constantes, showModal:true,})};
 
   const hideModalSwitcher = () => {
     Keyboard.dismiss();
@@ -77,27 +79,29 @@ export default app = () => {
   if (constantes.positionAcces) {
     console.log('===========> PART II <===============');
     console.log('coordonates de MapView: '+JSON.stringify(constantes.coordonates))
+    console.log('selected marker id : '+focusedMarker.id)
     const {latitude, longitude} = constantes.coordonates;
     return (
       <KeyboardAvoidingView keyboardVerticalOffset={30} behavior={'height'} style={{flex: 1}}>
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <TouchableWithoutFeedback onPress={()=>{
+          Keyboard.dismiss;
+          if(focusedMarker.id!=-1) setFocusedMarker({adresse:'',id:-1, accesList:[]})}}>
           <View style={{flex: 1, flexDirection: 'column'}}>
-            <View style={{flex: constantes.focusedMarkerInfo.accesList.length>0?0:1,}}>
-              <InfoMarkerModal markerInfo = {{...constantes.focusedMarkerInfo}}/></View>
+            <View style={{flex: focusedMarker.accesList.length>0?0:1,}}>
+              <InfoMarkerModal markerInfo = {{...focusedMarker}}/></View>
             <View style={{flex: 1000,}}>
               <MapView
                 customMapStyle={mapStyle}
                 showsCompass={false}
                 onRegionChangeComplete={info =>{
-                  console.log('coords de MapView: onRegionChaongeComplete : '+JSON.stringify(info));
+                  setConstantes({...constantes, markerList:[]})
                   getMarker(info)}}
                 showsUserLocation
                 provider={PROVIDER_GOOGLE}
                 style={{flex:1}}
                 loadingEnabled
-                region={constantes.coordonates}
-                >
-                <MarkerManager constantes={constantes} setConstantes={setConstantes} getMarker={getMarker}/></MapView>
+                initialRegion={constantes.coordonates}>
+                <MarkerManager constantes={constantes} focusedMarker={focusedMarker} setFocusedMarker={setFocusedMarker} setConstantes={setConstantes} getMarker={getMarker}/></MapView>
               <FAB
                 icon={constantes.showModal ? 'minus' : 'plus'}
                 style={styles.fab}
@@ -114,15 +118,15 @@ export default app = () => {
               <AddMarkerModal
                 showModal = {constantes.showModal}
                 hideModalSwitcher = {hideModalSwitcher}
-                sendToBase={(e)=>sendToBase(e)}/></View></View></TouchableWithoutFeedback></KeyboardAvoidingView>);} 
-  else {
-    console.log('===========> PART I <===============');
-    return <View style={{flex: 1, flexDirection: 'column'}}>
-      <FAB
-        loading={constantes.spinner}
-        small
-        icon="access-point-network-off"
-        style={styles.networkIcon}/></View>}
+                sendToBase={(e)=>sendToBase(e)}/></View></View></TouchableWithoutFeedback></KeyboardAvoidingView>);}
+    else {
+      console.log('===========> PART I <===============');
+      return <View style={{flex: 1, flexDirection: 'column'}}>
+        <FAB
+          loading={constantes.spinner}
+          small
+          icon="access-point-network-off"
+          style={styles.networkIcon}/></View>}
 };
 
 // ##################### Styles:

@@ -1,23 +1,26 @@
 import Geolocation from 'react-native-geolocation-service';
 
 
-function getMarkerExt(constantes,setConstantes,setDataToFetch) {
+async function getMarkerExt(constantes,setConstantes,setDataToFetch) {
   console.log('getMarkerExt');
   console.log('constantes.coordonates pour fetch '+JSON.stringify(constantes.coordonates))
   if (constantes.showModal === false) {
-    setDataToFetch({
-      route: 'findAllMarkers&Acces',
-      method: 'POST',
-      data: {...constantes.coordonates},
-      callback: e => {
-        console.log('reponse du fetch : '+ JSON.stringify(e));
-        if (e.isConnected){ 
-          setConstantes({
-            ...constantes,
-            markerList:[...e.jData],
-            positionAcces:true,
-            spinner:false,
-            isConnected:true})}},});}
+    try {
+      setDataToFetch({
+        route: 'findAllMarkers&Acces',
+        method: 'POST',
+        data: {...constantes.coordonates},
+        callback: e => {
+          console.log('reponse du fetch : '+ JSON.stringify(e));
+          if (e.isConnected){ 
+            setConstantes({
+              ...constantes,
+              markerList:[...e.jData],
+              positionAcces:true,
+              spinner:false,
+              isConnected:true})}},});
+      return true;
+    } catch (error) { console.log('error ocurre in trying to setDataToFetch by getMarkerExt...')}}
   else{ setConstantes({...constantes}) }}
 
 
@@ -30,7 +33,7 @@ export default geolock = {
         setConstantes, setDataToFetch)},
       error => console.log('errors: ', error.code, error.message));},
 
-  getMarker: (constantes, setConstantes, setDataToFetch) => getMarkerExt(constantes, setConstantes, setDataToFetch),
+  getMarker: async (constantes, setConstantes, setDataToFetch) => await getMarkerExt(constantes, setConstantes, setDataToFetch),
 
   sendToBase: (
     adresse,
