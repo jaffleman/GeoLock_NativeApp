@@ -16,7 +16,7 @@ export default MarkerManager = ({constantes, focusedMarker, setFocusedMarker, ge
           onPress={()=>{
             setFocusedMarker({adresse:'',id:-1, accesList:[]})
             setFocusedMarker({adresse: marker.adresse, id:marker.id, accesList:[...marker.accesList]})}}
-          pinColor={marker.id==focusedMarker.id?'yellow':'darkturquoise'}></Marker>);} 
+          pinColor={marker.id==focusedMarker.id?'#9900ee':'#1100ee'}></Marker>);} 
   else if (constantes.showModal) {
     return (
       <Marker
