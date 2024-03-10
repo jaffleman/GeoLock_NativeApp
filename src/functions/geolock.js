@@ -1,34 +1,36 @@
 import Geolocation from 'react-native-geolocation-service';
 
 
-function getMarkerExt(info,constantes,setConstantes,setDataToFetch) {
+function getMarkerExt(constantes,setConstantes,setDataToFetch) {
   console.log('getMarkerExt');
+  console.log('constantes.coordonates pour fetch '+JSON.stringify(constantes.coordonates))
   if (constantes.showModal === false) {
     setDataToFetch({
       route: 'findAllMarkers&Acces',
       method: 'POST',
-      data: info,
+      data: {...constantes.coordonates},
       callback: e => {
         console.log('reponse du fetch : '+ JSON.stringify(e));
         if (e.isConnected){ 
           setConstantes({
             ...constantes,
-            coordonates:{...info},
             markerList:[...e.jData],
             positionAcces:true,
             spinner:false,
             isConnected:true})}},});}
-  else{
-    setConstantes({...constantes, coordonates:{...info}})}}
+  else{ setConstantes({...constantes}) }}
 
 
 export default geolock = {
   getPosition: (constantes, setConstantes, setDataToFetch)=> { 
     console.log('geolock.getposition()');
-    Geolocation.getCurrentPosition(({coords}) => getMarkerExt(coords,constantes, setConstantes, setDataToFetch),
+    Geolocation.getCurrentPosition(({coords}) => {
+      console.log('coords de geolocation.getCurrentPosition: '+JSON.stringify(coords));
+      getMarkerExt({...constantes, coordonates:{...constantes.coordonates, longitude:coords.longitude, latitude:coords.latitude}}, 
+        setConstantes, setDataToFetch)},
       error => console.log('errors: ', error.code, error.message));},
 
-  getMarker: (info, constantes, setConstantes, setDataToFetch) => getMarkerExt(info, constantes, setConstantes, setDataToFetch),
+  getMarker: (constantes, setConstantes, setDataToFetch) => getMarkerExt(constantes, setConstantes, setDataToFetch),
 
   sendToBase: (
     adresse,

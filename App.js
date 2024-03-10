@@ -56,14 +56,15 @@ export default app = () => {
 
   // ###################### les Fonctions:
 
-  const getMarker = info => geolock.getMarker(info,constantes,setConstantes,setDataToFetch,);
+  const getMarker = info => {
+    geolock.getMarker({...constantes, coordonates:{...info}},setConstantes,setDataToFetch,)};
 
   const showModalSwitcher = () => {
     setConstantes({...constantes, showModal:true,  focusedMarkerInfo:{adresse:'',id:-1, accesList:[]}})};
 
   const hideModalSwitcher = () => {
     Keyboard.dismiss();
-    geolock.getMarker(constantes.coordonates,{...constantes, showModal:false},setConstantes,setDataToFetch,);};
+    geolock.getMarker({...constantes, showModal:false},setConstantes,setDataToFetch,);};
 
   const sendToBase = (e) => {
     geolock.sendToBase(
@@ -75,6 +76,7 @@ export default app = () => {
   //##################### RENDER:
   if (constantes.positionAcces) {
     console.log('===========> PART II <===============');
+    console.log('coordonates de MapView: '+JSON.stringify(constantes.coordonates))
     const {latitude, longitude} = constantes.coordonates;
     return (
       <KeyboardAvoidingView keyboardVerticalOffset={30} behavior={'height'} style={{flex: 1}}>
@@ -86,21 +88,15 @@ export default app = () => {
               <MapView
                 customMapStyle={mapStyle}
                 showsCompass={false}
-                onRegionChangeComplete={info => getMarker(info)}
+                onRegionChangeComplete={info =>{
+                  console.log('coords de MapView: onRegionChaongeComplete : '+JSON.stringify(info));
+                  getMarker(info)}}
                 showsUserLocation
                 provider={PROVIDER_GOOGLE}
                 style={{flex:1}}
                 loadingEnabled
-                region={{
-                  latitude,
-                  longitude,
-                  latitudeDelta: LATITUDE_DELTA,
-                  longitudeDelta: LONGITUDE_DELTA,}}
-                initialRegion={{
-                  latitude,
-                  longitude,
-                  latitudeDelta: LATITUDE_DELTA,
-                  longitudeDelta: LONGITUDE_DELTA,}}>
+                region={constantes.coordonates}
+                >
                 <MarkerManager constantes={constantes} setConstantes={setConstantes} getMarker={getMarker}/></MapView>
               <FAB
                 icon={constantes.showModal ? 'minus' : 'plus'}

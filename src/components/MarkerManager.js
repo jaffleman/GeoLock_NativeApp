@@ -16,7 +16,7 @@ export default MarkerManager = ({constantes, setConstantes, getMarker}) => {
   else if (constantes.showModal) {
     return (
       <Marker
-        onDragEnd={e=>getMarker(e.nativeEvent.coordinate)}
+        onDragEnd={e=>getMarker({...constantes.coordonates, longitude:e.nativeEvent.coordinate.longitude, latitude:e.nativeEvent.coordinate.latitude, })}
         draggable={true}
         coordinate={{
           longitude: constantes.coordonates.longitude,
