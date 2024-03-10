@@ -1,7 +1,7 @@
 import React from 'react';
 import {Marker} from 'react-native-maps'; // remove PROVIDER_GOOGLE import if not using Google Maps
 
-export default MarkerManager = ({constantes, setConstantes}) => {
+export default MarkerManager = ({constantes, setConstantes, getMarker}) => {
   if (!constantes.showModal) {
     return constantes.markerList.map(
       (marker, index) => <Marker
@@ -16,6 +16,7 @@ export default MarkerManager = ({constantes, setConstantes}) => {
   else if (constantes.showModal) {
     return (
       <Marker
+        onDragEnd={e=>getMarker(e.nativeEvent.coordinate)}
         draggable={true}
         coordinate={{
           longitude: constantes.coordonates.longitude,

@@ -11,12 +11,13 @@ function getMarkerExt(info,constantes,setConstantes,setDataToFetch) {
       callback: e => {
         console.log('reponse du fetch : '+ JSON.stringify(e));
         if (e.isConnected){ 
-          setConstantes({...constantes,
-          coordonates:{...info},
-          markerList:[...e.jData],
-          positionAcces:true,
-          spinner:false,
-          isConnected:true})}},});}
+          setConstantes({
+            ...constantes,
+            coordonates:{...info},
+            markerList:[...e.jData],
+            positionAcces:true,
+            spinner:false,
+            isConnected:true})}},});}
   else{
     setConstantes({...constantes, coordonates:{...info}})}}
 

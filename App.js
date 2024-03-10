@@ -29,7 +29,9 @@ export default app = () => {
 
   const [constantes, setConstantes] = useState({
     positionAcces:false,
-    coordonates:{},
+    coordonates:{
+      latitudeDelta: LATITUDE_DELTA,
+      longitudeDelta: LONGITUDE_DELTA,},
     markerList:[],
     focusedMarkerInfo:{adresse:'',id:-1, accesList:[]},
     showModal:false,
@@ -89,13 +91,17 @@ export default app = () => {
                 provider={PROVIDER_GOOGLE}
                 style={{flex:1}}
                 loadingEnabled
-                followsUserLocation={true}
+                region={{
+                  latitude,
+                  longitude,
+                  latitudeDelta: LATITUDE_DELTA,
+                  longitudeDelta: LONGITUDE_DELTA,}}
                 initialRegion={{
                   latitude,
                   longitude,
                   latitudeDelta: LATITUDE_DELTA,
                   longitudeDelta: LONGITUDE_DELTA,}}>
-                <MarkerManager constantes={constantes} setConstantes={setConstantes}/></MapView>
+                <MarkerManager constantes={constantes} setConstantes={setConstantes} getMarker={getMarker}/></MapView>
               <FAB
                 icon={constantes.showModal ? 'minus' : 'plus'}
                 style={styles.fab}
