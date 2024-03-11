@@ -6,7 +6,7 @@ export default MarkerManager = ({constantes, focusedMarker, setFocusedMarker, ge
   if (!constantes.showModal) {
     return constantes.markerList.map(
       (marker, index) => <Marker
-
+      
           zIndex={-index}
           draggable={false}
           key={marker.id}

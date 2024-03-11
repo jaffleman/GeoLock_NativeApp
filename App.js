@@ -10,7 +10,7 @@ import {
 
 import MapView, {PROVIDER_GOOGLE} from 'react-native-maps'; // remove PROVIDER_GOOGLE import if not using Google Maps
 import requestLocationPermission from './src/requestLocationPermission';
-import {FAB} from 'react-native-paper';
+import {FAB,} from 'react-native-paper';
 import fetcher from './src/functions/fetcher';
 import AddMarkerModal from './src/components/AddMarkerModal';
 import InfoMarkerModal from './src/components/InfoMarkerModal';
@@ -85,7 +85,8 @@ export default app = () => {
       <KeyboardAvoidingView keyboardVerticalOffset={30} behavior={'height'} style={{flex: 1}}>
         <TouchableWithoutFeedback onPress={()=>{
           Keyboard.dismiss;
-          if(showInfoMarker) setFocusedMarker({adresse:'',id:-1, accesList:[]})}}>
+          if(showInfoMarker) {
+            setFocusedMarker({adresse:'',id:-1, accesList:[]})}}}>
           <View style={{flex: 1, flexDirection: 'column'}}>
             <View style={{flex: 1000,}}>
             <View  style={{position:'absolute', display:showInfoMarker?'flex':'none', top:0, left:0, right:0, zIndex:1}}>
@@ -103,6 +104,8 @@ export default app = () => {
                 initialRegion={constantes.coordonates}>
                 <MarkerManager constantes={constantes} focusedMarker={focusedMarker} setFocusedMarker={setFocusedMarker} setConstantes={setConstantes} getMarker={getMarker}/></MapView>
               <FAB
+                  
+                small
                 icon={constantes.showModal ? 'minus' : 'plus'}
                 style={styles.fab}
                 onPress={constantes.showModal ? hideModalSwitcher : showModalSwitcher}/>
@@ -160,8 +163,9 @@ const styles = StyleSheet.create({
   fab: {
     position: 'absolute',
     margin: 16,
-    right: 10,
-    bottom: 10,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#1100ee'
   },
   networkIcon: {
     position: 'absolute',
