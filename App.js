@@ -172,7 +172,6 @@ export default app = () => {
                 initialRegion={constantes.coordonates}>
                 {localMarkerList}</MapView>
               <FAB
-                small
                 icon={constantes.showModal ? 'minus' : 'plus'}
                 style={styles.fab}
                 onPress={constantes.showModal ? hideModalSwitcher : showModalSwitcher}/>
