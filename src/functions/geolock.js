@@ -3,7 +3,7 @@ import Geolocation from 'react-native-geolocation-service';
 
 async function getMarkerExt(constantes,setConstantes,setDataToFetch) {
   console.log('getMarkerExt');
-  console.log('constantes.coordonates pour fetch '+JSON.stringify(constantes.coordonates))
+  // console.log('constantes.coordonates pour fetch '+JSON.stringify(constantes.coordonates))
   if (constantes.showModal === false) {
     try {
       setDataToFetch({
@@ -11,7 +11,7 @@ async function getMarkerExt(constantes,setConstantes,setDataToFetch) {
         method: 'POST',
         data: {...constantes.coordonates},
         callback: e => {
-          console.log('reponse du fetch : '+ JSON.stringify(e));
+          // console.log('reponse du fetch : '+ JSON.stringify(e));
           if (e.isConnected){ 
             setConstantes({
               ...constantes,
@@ -27,13 +27,15 @@ async function getMarkerExt(constantes,setConstantes,setDataToFetch) {
 export default geolock = {
   getPosition: (constantes, setConstantes, setDataToFetch)=> { 
     console.log('geolock.getposition()');
-    Geolocation.getCurrentPosition(({coords}) => {
-      console.log('coords de geolocation.getCurrentPosition: '+JSON.stringify(coords));
-      getMarkerExt({...constantes, coordonates:{...constantes.coordonates, longitude:coords.longitude, latitude:coords.latitude}}, 
-        setConstantes, setDataToFetch)},
-      error => console.log('errors: ', error.code, error.message));},
+    setTimeout(() => {
+      Geolocation.getCurrentPosition(({coords}) => {
+        // console.log('coords de geolocation.getCurrentPosition: '+JSON.stringify(coords));
+        getMarkerExt({...constantes, coordonates:{...constantes.coordonates, longitude:coords.longitude, latitude:coords.latitude}}, 
+          setConstantes, setDataToFetch)},
+        error => console.log('errors: ', error.code, error.message));      
+    }, 500);},
 
-  getMarker: async (constantes, setConstantes, setDataToFetch) => await getMarkerExt(constantes, setConstantes, setDataToFetch),
+  getMarker: (constantes, setConstantes, setDataToFetch) =>getMarkerExt(constantes, setConstantes, setDataToFetch),
 
   sendToBase: (
     adresse,
@@ -54,10 +56,14 @@ export default geolock = {
           longitude: constantes.coordonates.longitude,
           acces: [{type: accesType, code}],},
         callback: e => {
-          console.log('reponse du fetch : ' + JSON.stringify(e));
-          if (e.isConnected) setConstantes({
+          // console.log('reponse du fetch : ' + JSON.stringify(e));
+          if (e.isConnected) {
+            getMarkerExt(constantes, setConstantes, setDataToFetch)
+            setTimeout(() => {
+             setConstantes({
             ...constantes, 
             showModal:false, 
             spinner:false, 
-            isConnected:e.isConnected})},});},
+            isConnected:e.isConnected}) 
+            }, 100);}},});},
 }

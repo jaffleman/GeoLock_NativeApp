@@ -1,5 +1,6 @@
 import {LOCAL_APP_ROUTE2} from '@env';
 import {REACT_APP_ROUTE} from '@env';
+import { Marker } from 'react-native-maps';
 
 export default async function fetcher({route, method, data, callback}) {
   const lePaquet = {
@@ -23,5 +24,6 @@ export default async function fetcher({route, method, data, callback}) {
   if (isConnected) {
     console.log('Fetch reponse ok...')
     jData = await fetchData.json();}
+    jData = jData.map(marker=>{return {...marker}})
   callback({isConnected, jData});
 }
