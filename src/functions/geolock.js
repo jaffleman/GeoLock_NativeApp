@@ -1,8 +1,8 @@
 import Geolocation from 'react-native-geolocation-service';
 
 
-async function getMarkerExt(constantes,setConstantes,setDataToFetch) {
-  console.log('getMarkerExt');
+async function getMarkerExt(constantes,setConstantes,setDataToFetch, logMarging) {
+  console.log(logMarging+' getMarkerExt');
   // console.log('constantes.coordonates pour fetch '+JSON.stringify(constantes.coordonates))
   if (constantes.showModal === false) {
     try {
@@ -11,7 +11,7 @@ async function getMarkerExt(constantes,setConstantes,setDataToFetch) {
         method: 'POST',
         data: {...constantes.coordonates},
         callback: e => {
-          // console.log('reponse du fetch : '+ JSON.stringify(e));
+          console.log(logMarging+' reponse du fetch : '+ JSON.stringify(e));
           if (e.isConnected){ 
             setConstantes({
               ...constantes,
@@ -20,22 +20,22 @@ async function getMarkerExt(constantes,setConstantes,setDataToFetch) {
               spinner:false,
               isConnected:true})}},});
       return true;
-    } catch (error) { console.log('error ocurre in trying to setDataToFetch by getMarkerExt...')}}
+    } catch (error) { console.log(logMarging+' error ocurre in trying to setDataToFetch by getMarkerExt...')}}
   else{ setConstantes({...constantes}) }}
 
 
 export default geolock = {
-  getPosition: (constantes, setConstantes, setDataToFetch)=> { 
-    console.log('geolock.getposition()');
+  getPosition: (constantes, setConstantes, setDataToFetch , logMarging = '')=> { 
+    console.log(logMarging+' geolock.getposition()');
     setTimeout(() => {
       Geolocation.getCurrentPosition(({coords}) => {
         // console.log('coords de geolocation.getCurrentPosition: '+JSON.stringify(coords));
         getMarkerExt({...constantes, coordonates:{...constantes.coordonates, longitude:coords.longitude, latitude:coords.latitude}}, 
-          setConstantes, setDataToFetch)},
-        error => console.log('errors: ', error.code, error.message));      
+          setConstantes, setDataToFetch, logMarging)},
+        error => console.log(logMarging+' errors: ', error.code, error.message));      
     }, 500);},
 
-  getMarker: (constantes, setConstantes, setDataToFetch) =>getMarkerExt(constantes, setConstantes, setDataToFetch),
+  getMarker: (constantes, setConstantes, setDataToFetch, logMargin='') =>getMarkerExt(constantes, setConstantes, setDataToFetch, logMargin),
 
   sendToBase: (
     adresse,

@@ -1,8 +1,7 @@
 import {LOCAL_APP_ROUTE2} from '@env';
 import {REACT_APP_ROUTE} from '@env';
-import { Marker } from 'react-native-maps';
 
-export default async function fetcher({route, method, data, callback}) {
+export default async function fetcher({route, method, data, callback}, logMargin = '') {
   const lePaquet = {
     method,
     body: JSON.stringify(data),
@@ -10,20 +9,21 @@ export default async function fetcher({route, method, data, callback}) {
 
   let fetchData = {};
   let isConnected = true;
-  console.log('Envoie du Fetch...');
+  console.log(logMargin+' Envoie du Fetch...');
   // ipv6
   fetchData = await fetch(`${REACT_APP_ROUTE}${route}`, lePaquet)
-    .catch(err => {isConnected = false; console.log('echec envoi IpV6')});
+    .catch(err => {isConnected = false; console.log(logMargin+' echec envoi IpV6')});
   if (!isConnected) {
     isConnected = true;
     // ipv4
     fetchData = await fetch(`${LOCAL_APP_ROUTE2}${route}`, lePaquet)
-    .catch( err => {(isConnected = false); console.log('echec envoi IpV4')});
+    .catch( err => {(isConnected = false); console.log(logMargin+' echec envoi IpV4')});
   }
   let jData = {};
   if (isConnected) {
-    console.log('Fetch reponse ok...')
+    console.log(logMargin+' Fetch reponse ok...')
     jData = await fetchData.json();}
-    jData = jData.map(marker=>{return {...marker}})
+    console.log(logMargin+' contenu de jData: '+JSON.stringify(jData))
+    if(typeof jData === 'object' && !('acces_id' in jData)) jData = jData.map(marker=>{return {...marker}})
   callback({isConnected, jData});
 }

@@ -1,0 +1,17 @@
+[
+{ spinner, 									  isConnected,						},
+{		focusedMarkerId, 				   seletedMarker,							},
+{		focusedMarkerId, showMarkerAdresseEdit, showModal, 									},
+{ spinner,																},
+{		focusedMarkerId, showMarkerAdresseEdit,											},
+
+{ spinner,									  isConnected,  markerList, positionAcces,		},
+{ spinner,						showModal,		  isConnected,						},
+
+{		focusedMarkerId,								markerList,				},
+
+{ spinner,			 showMarkerAdresseEdit, showModal,		  isConnected,		    positionAcces		},
+{ spinner,																},
+{				 showMarkerAdresseEdit,											},
+{ spinner, 	focusedMarkerId, showMarkerAdresseEdit, showModal, seletedMarker, isConnected,  markerList, positionAcces, coordonates,	}
+]

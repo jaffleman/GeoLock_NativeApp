@@ -18,7 +18,6 @@ export default UnselectedMarker = ({constantes, setConstantes, poped, setPoped})
                     console.log('poped: '+JSON.stringify(poped))
                     setConstantes({
                         ...constantes,
-                        focusedMarkerId: marker.id,
                         markerInfo: {...poped},
                         markerList:[...backupList]
                     })}}

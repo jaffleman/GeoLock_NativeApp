@@ -38,19 +38,19 @@ export default app = () => {
   
   // ################ Stats:
   const [constantes, setConstantes] = useState({
-    focusedMarkerId:0,
-    showMarkerAdresseEdit:false,
-    positionAcces:false,
-    coordonates:{
+    // showMarkerAdresseEdit:false, // define whether the marker adresse must be editable
+    positionAcces:false, //
+    coordonates:{ // coordonate of the user on the map
       longitude:2.347079571336508,
       latitude:48.855188003520624,
       latitudeDelta: LATITUDE_DELTA,
       longitudeDelta: LONGITUDE_DELTA,},
-    markerList:[],
-    showModal:false,
-    spinner:true,
-    isConnected:true,})
-  const [poped, setPoped] = useState({id:0})
+    markerList:[], // list of the markers sended from the api
+    showModal:false, // define whether the marker creator must be show
+    spinner:true, // whether to show the spinner
+    isConnected:true,
+    seletedMarker:{id:0, adresse:'', accesList:[]}}) // the marker info which as been selected by the user
+  // const [poped, setPoped] = useState({id:0})
   const [dataToFetch, setDataToFetch] = useState({}); // données a transmettre à l'api
   // const [focusedMarker, setFocusedMarker] = useState({adresse:'',id:-1, accesList:[], showInfo:true})
   const [localMarkerList, setLocalMarkerList] = useState([])
@@ -58,33 +58,45 @@ export default app = () => {
 
 
   useEffect(()=>{ //composantDidMount
-    console.log('=======================> composantDidMount <=======================')
+    console.log('=============> composantDidMount')
     requestLocationPermission().then(agrement=>{
-      console.log('agrement: '+agrement)
-      geolock.getPosition({ ...constantes }, setConstantes, setDataToFetch);
-      console.log('=======================> FIN composantDidMount <=======================')})},[])
+      console.log('=============> agrement: '+agrement)
+      geolock.getPosition({ ...constantes }, setConstantes, setDataToFetch,'=============>');
+      console.log('=============> FIN composantDidMount')})},[])
+
   useEffect(() => {
-    console.log('=======================> useEffect [dataToFetch] <=======================')
+    console.log('=============>=============> useEffect [dataToFetch] ')
     if (Object.keys(dataToFetch).length) {
       setConstantes({...constantes, spinner:true, isConnected:false,});
-      fetcher(dataToFetch);} 
-    console.log('=======================> FIN useEffect [dataToFetch] <=======================')}, [dataToFetch] );
+      fetcher(dataToFetch, '=============>=============>');} 
+    console.log('=============>=============> FIN useEffect [dataToFetch] ')}, [dataToFetch] );
+    
   useEffect(()=>{
-    console.log('=======================> useEffect [constantes] <=======================')
+    console.log('=============>=============>=============> useEffect [constantes]')
+    const markerL = []
     if (constantes.showModal) {
-      return setLocalMarkerList([
+      console.log('=============>=============>=============> mode creation d1 marker')
+      
+        markerL.push(
         <Marker
           key={Math.floor(Math.random() * 1000)}
-          onDragEnd={e=>getMarker({...constantes.coordonates, longitude:e.nativeEvent.coordinate.longitude, latitude:e.nativeEvent.coordinate.latitude, })}
+          onDragEnd={e=>getMarker({
+            ...constantes.coordonates, 
+            longitude:e.nativeEvent.coordinate.longitude, 
+            latitude:e.nativeEvent.coordinate.latitude, },'=============>=============>=============>')}
           draggable={true}
           coordinate={{
             longitude: constantes.coordonates.longitude,
             latitude: constantes.coordonates.latitude,
           }}
-          pinColor={'red'}/>])}
+          pinColor={'red'}/>)}
+
     else{
-      const  myView = constantes.markerList.map((marker, index)=>{
-        if (marker.id != constantes.focusedMarkerId) {
+      console.log('=============>=============>=============> mode affichage des markers')
+      console.log('=============>=============>=============> nombre de marker: '+constantes.markerList.length)
+      
+        markerL.push(...constantes.markerList.map((marker, index)=>{
+        const color = marker.id != constantes.seletedMarker.id?'#1100ee':'#9900ee'
           return <Marker
             zIndex={-index}
             draggable={false}
@@ -92,46 +104,33 @@ export default app = () => {
             coordinate={{
                 longitude: marker.longitude,
                 latitude: marker.latitude,}}
-            onPress={()=>{
-                const backupList = [...constantes.markerList]
-                console.log('backup List before splice: '+ JSON.stringify(backupList))
-                setPoped(backupList.splice(index,1)[0])
-                console.log('poped: '+JSON.stringify(poped))
-                console.log('backup List after splice: '+ JSON.stringify(backupList))
-                setLocalMarkerList([])
-                setConstantes({
-                    ...constantes,
-                    focusedMarkerId: marker.id,
-                    markerInfo: {...poped},
-                })}}
-            pinColor='#1100ee'></Marker>}
-        else if (marker.id == constantes.focusedMarkerId){
-          console.log('focusedMarker: '+constantes.focusedMarkerId)
-          return <Marker
-            zIndex={10000}
-            draggable={false}
-            key={poped.id}
-            coordinate={{
-                longitude: poped.longitude,
-                latitude: poped.latitude,}}
-            onPress={()=>{}}
-            pinColor='#9900ee'></Marker>}})
-      return setLocalMarkerList(myView)}
-  }, [constantes])
+            onPress={()=>managePresedMarker(marker)}
+            pinColor={color}></Marker>}))}
+    setLocalMarkerList([...markerL]);
+    console.log('=============>=============>=============> FIN useEffect [constantes]');}, 
+    [constantes])
 
 
 
 
 
   // ###################### les Fonctions:
-  const getMarker = info => {
-    geolock.getMarker({...constantes, showMarkerAdresseEdit:false, coordonates:{...info}},setConstantes,setDataToFetch,)};
+  const managePresedMarker = (marker)=>{
+    console.log('manage presed marker id: '+marker.id)
+    setLocalMarkerList([])
+    setConstantes({
+        ...constantes,
+        seletedMarker: {...marker}})};
+
+  const getMarker = (info, logMargin='') => {
+    geolock.getMarker({...constantes, showMarkerAdresseEdit:false, coordonates:{...info}},setConstantes,setDataToFetch,logMargin)};
   const showModalSwitcher = () => {
     // setFocusedMarker({adresse:'',id:-1, accesList:[]})
-    setConstantes({...constantes, showModal:true, focusedMarkerId : 0, showMarkerAdresseEdit:false})};
+    setConstantes({...constantes, showModal:true, showMarkerAdresseEdit:false})};
   const hideModalSwitcher = () => {
     Keyboard.dismiss();
-    geolock.getMarker({...constantes, showModal:false},setConstantes,setDataToFetch,);};
+    // geolock.getMarker({...constantes, showModal:false},setConstantes,setDataToFetch,);
+    setConstantes({...constantes, showModal:false})};
   const sendToBase = (e) => {
     setConstantes({...constantes, spinner:true});
     geolock.sendToBase(
@@ -140,23 +139,28 @@ export default app = () => {
       accesType = e.accesType,
       constantes, setConstantes, setDataToFetch,);}
   const touchebleWithoutFeedbackOnPressHandle = ()=>{
-    const showInfoMarker = constantes.focusedMarkerId == 0 ? false : true;
+    const showInfoMarker = constantes.seletedMarker.id == 0 ? false : true;
     Keyboard.dismiss;
     if(showInfoMarker) {
       setLocalMarkerList([])
-      setConstantes({...constantes, focusedMarkerId : 0, showMarkerAdresseEdit : false})};}
+      setConstantes({...constantes, seletedMarker: {id:0, adresse:'', accesList:[]}, showMarkerAdresseEdit : false})};}
 
       
   //##################### RENDER:
   if (constantes.positionAcces) {
-    console.log('===========> PART II <===============');
+    console.log('PART II');
     console.log('coordonates de MapView: '+JSON.stringify(constantes.coordonates))
-    console.log('selected marker id : '+constantes.focusedMarkerId)
-    const showInfoMarker = constantes.focusedMarkerId == 0 ? false : true;
+    console.log('selected marker id : '+constantes.seletedMarker.id)
+    const showInfoMarker = constantes.seletedMarker.id == 0 ? false : true;
+    console.log('must show marker info  & acces: '+showInfoMarker)
     return (
       <KeyboardAvoidingView keyboardVerticalOffset={30} behavior={'height'} style={{flex: 1}}>
-        <View  style={{position:'absolute', display:showInfoMarker?'flex':'none', top:0, left:0, right:0, zIndex:100}}>
-          <InfoMarkerModal setDataToFetch = {setDataToFetch} setConstantes = {setConstantes} constantes = {constantes}/></View>
+        {<View  style={{position:'absolute', display:showInfoMarker?'flex':'none', top:0, left:0, right:0, zIndex:100}}>
+          <InfoMarkerModal 
+            setDataToFetch = {setDataToFetch} 
+            setConstantes = {setConstantes} 
+            constantes = {constantes}
+            getMarker = {getMarker}/></View>}
         <TouchableWithoutFeedback onPress={()=>touchebleWithoutFeedbackOnPressHandle()}>
           <View style={{flex: 1, flexDirection: 'column'}}>
             <View style={{flex: 1000,}}>
@@ -188,7 +192,7 @@ export default app = () => {
                 sendToBase={(e)=>sendToBase(e)}
                 hideModalSwitcher = {hideModalSwitcher}/></View></View></TouchableWithoutFeedback></KeyboardAvoidingView>);}
     else {
-      console.log('===========> PART I <===============');
+      console.log('PART I');
       return <View style={{flex: 1, flexDirection: 'column'}}>
         <FAB
           loading={constantes.spinner}

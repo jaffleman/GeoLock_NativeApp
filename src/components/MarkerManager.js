@@ -21,8 +21,7 @@ export default MarkerManager = ({constantes, setConstantes, getMarker}) => {
               markerList:constantes.markerList.map(marker2=>{
                 return {
                   ...marker2,
-                  isFocused: marker2.id==marker.id?true:false}}), 
-              focusedMarkerId: marker.id})}}
+                  isFocused: marker2.id==marker.id?true:false}})})}}
           pinColor={markerColor}></Marker>});} 
   else if (constantes.showModal) {
     return (
