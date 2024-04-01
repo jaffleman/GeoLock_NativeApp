@@ -49,7 +49,7 @@ export default app = () => {
     showModal:false, // define whether the marker creator must be show
     spinner:true, // whether to show the spinner
     isConnected:true,
-    seletedMarker:{id:0, adresse:'', accesList:[]}}) // the marker info which as been selected by the user
+    selectedMarker:{id:0, adresse:'', accesList:[]}}) // the marker info which as been selected by the user
   // const [poped, setPoped] = useState({id:0})
   const [dataToFetch, setDataToFetch] = useState({}); // données a transmettre à l'api
   // const [focusedMarker, setFocusedMarker] = useState({adresse:'',id:-1, accesList:[], showInfo:true})
@@ -96,7 +96,7 @@ export default app = () => {
       console.log('=============>=============>=============> nombre de marker: '+constantes.markerList.length)
       
         markerL.push(...constantes.markerList.map((marker, index)=>{
-        const color = marker.id != constantes.seletedMarker.id?'#1100ee':'#9900ee'
+        const color = marker.id != constantes.selectedMarker.id?'#1100ee':'#9900ee'
           return <Marker
             zIndex={-index}
             draggable={false}
@@ -120,7 +120,7 @@ export default app = () => {
     setLocalMarkerList([])
     setConstantes({
         ...constantes,
-        seletedMarker: {...marker}})};
+        selectedMarker: {...marker}})};
 
   const getMarker = (info, logMargin='') => {
     geolock.getMarker({...constantes, showMarkerAdresseEdit:false, coordonates:{...info}},setConstantes,setDataToFetch,logMargin)};
@@ -139,19 +139,19 @@ export default app = () => {
       accesType = e.accesType,
       constantes, setConstantes, setDataToFetch,);}
   const touchebleWithoutFeedbackOnPressHandle = ()=>{
-    const showInfoMarker = constantes.seletedMarker.id == 0 ? false : true;
+    const showInfoMarker = constantes.selectedMarker.id == 0 ? false : true;
     Keyboard.dismiss;
     if(showInfoMarker) {
       setLocalMarkerList([])
-      setConstantes({...constantes, seletedMarker: {id:0, adresse:'', accesList:[]}, showMarkerAdresseEdit : false})};}
+      setConstantes({...constantes, selectedMarker: {id:0, adresse:'', accesList:[]}, showMarkerAdresseEdit : false})};}
 
       
   //##################### RENDER:
   if (constantes.positionAcces) {
     console.log('PART II');
     console.log('coordonates de MapView: '+JSON.stringify(constantes.coordonates))
-    console.log('selected marker id : '+constantes.seletedMarker.id)
-    const showInfoMarker = constantes.seletedMarker.id == 0 ? false : true;
+    console.log('selected marker id : '+constantes.selectedMarker.id)
+    const showInfoMarker = constantes.selectedMarker.id == 0 ? false : true;
     console.log('must show marker info  & acces: '+showInfoMarker)
     return (
       <KeyboardAvoidingView keyboardVerticalOffset={30} behavior={'height'} style={{flex: 1}}>
