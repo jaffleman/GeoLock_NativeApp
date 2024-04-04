@@ -1,17 +1,17 @@
 [
-{ spinner, 									  isConnected,						},
-{		focusedMarkerId, 				   seletedMarker,							},
-{		focusedMarkerId, showMarkerAdresseEdit, showModal, 									},
+{ spinner, 									                                  isConnected,						},
+{		    focusedMarkerId, 				                  seletedMarker,							},
+{		    focusedMarkerId, showMarkerAdresseEdit, showModal, 									},
 { spinner,																},
-{		focusedMarkerId, showMarkerAdresseEdit,											},
+{		    focusedMarkerId, showMarkerAdresseEdit,											},
 
-{ spinner,									  isConnected,  markerList, positionAcces,		},
-{ spinner,						showModal,		  isConnected,						},
+{ spinner,									                                  isConnected,  markerList, positionAcces,		},
+{ spinner,						                    showModal,		          isConnected,						},
 
-{		focusedMarkerId,								markerList,				},
+{		    focusedMarkerId,								                                markerList,				},
 
-{ spinner,			 showMarkerAdresseEdit, showModal,		  isConnected,		    positionAcces		},
+{ spinner,			         showMarkerAdresseEdit, showModal,		          isConnected,		        positionAcces		},
 { spinner,																},
-{				 showMarkerAdresseEdit,											},
+{				             showMarkerAdresseEdit,											},
 { spinner, 	focusedMarkerId, showMarkerAdresseEdit, showModal, seletedMarker, isConnected,  markerList, positionAcces, coordonates,	}
 ]

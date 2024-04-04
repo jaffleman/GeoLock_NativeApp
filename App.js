@@ -14,6 +14,7 @@ import fetcher from './src/functions/fetcher';
 import AddMarkerModal from './src/components/AddMarkerModal';
 import InfoMarkerModal from './src/components/InfoMarkerModal';
 import geolock from './src/functions/geolock';
+import Markers from './src/components/Markers';
 
 
 
@@ -71,56 +72,9 @@ export default app = () => {
       fetcher(dataToFetch, '=============>=============>');} 
     console.log('=============>=============> FIN useEffect [dataToFetch] ')}, [dataToFetch] );
     
-  useEffect(()=>{
-    console.log('=============>=============>=============> useEffect [constantes]')
-    const markerL = []
-    if (constantes.showModal) {
-      console.log('=============>=============>=============> mode creation d1 marker')
-      
-        markerL.push(
-        <Marker
-          key={Math.floor(Math.random() * 1000)}
-          onDragEnd={e=>getMarker({
-            ...constantes.coordonates, 
-            longitude:e.nativeEvent.coordinate.longitude, 
-            latitude:e.nativeEvent.coordinate.latitude, },'=============>=============>=============>')}
-          draggable={true}
-          coordinate={{
-            longitude: constantes.coordonates.longitude,
-            latitude: constantes.coordonates.latitude,
-          }}
-          pinColor={'red'}/>)}
-
-    else{
-      console.log('=============>=============>=============> mode affichage des markers')
-      console.log('=============>=============>=============> nombre de marker: '+constantes.markerList.length)
-      
-        markerL.push(...constantes.markerList.map((marker, index)=>{
-        const color = marker.id != constantes.selectedMarker.id?'#1100ee':'#9900ee'
-          return <Marker
-            zIndex={-index}
-            draggable={false}
-            key={marker.id}
-            coordinate={{
-                longitude: marker.longitude,
-                latitude: marker.latitude,}}
-            onPress={()=>managePresedMarker(marker)}
-            pinColor={color}></Marker>}))}
-    setLocalMarkerList([...markerL]);
-    console.log('=============>=============>=============> FIN useEffect [constantes]');}, 
-    [constantes])
-
-
-
-
 
   // ###################### les Fonctions:
-  const managePresedMarker = (marker)=>{
-    console.log('manage presed marker id: '+marker.id)
-    setLocalMarkerList([])
-    setConstantes({
-        ...constantes,
-        selectedMarker: {...marker}})};
+
 
   const getMarker = (info, logMargin='') => {
     geolock.getMarker({...constantes, showMarkerAdresseEdit:false, coordonates:{...info}},setConstantes,setDataToFetch,logMargin)};
@@ -174,7 +128,10 @@ export default app = () => {
                 style={{flex:1}}
                 loadingEnabled
                 initialRegion={constantes.coordonates}>
-                {localMarkerList}</MapView>
+                  <Markers 
+                    constantes={constantes} 
+                    setConstantes={setConstantes}
+                    getMarker={getMarker}/></MapView>
               <FAB
                 icon={constantes.showModal ? 'minus' : 'plus'}
                 style={styles.fab}
