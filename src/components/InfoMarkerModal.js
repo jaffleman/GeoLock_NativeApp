@@ -1,16 +1,19 @@
 import {StyleSheet, Alert, TouchableWithoutFeedback, View, FlatList} from 'react-native';
 import * as React from 'react';
 import {Avatar, Button, Card, Text, TextInput, Chip} from 'react-native-paper';
+import { CoordonatesContext } from '../context/coordonatesContext';
+import { ConstantesContext } from '../context/constantesContext';
+import geolock from '../functions/geolock';
 
 
-export default function InfoMarkerModal({setDataToFetch, setConstantes, constantes, getMarker}) {
-  // const {id, adresse, accesList} = constantes.selectedMarker;
+export default function InfoMarkerModal() { 
+  const {coods} = React.useContext(CoordonatesContext)
+  const {constantes, setConstantes} = React.useContext(ConstantesContext)
   const adresseRef = React.useRef(null)
-  const [localMarker, setLocalMaerker] = React.useState({...constantes.selectedMarker});
+  const [localMarker, setLocalMarker] = React.useState({...constantes.selectedMarker});
   React.useEffect(()=>{
-    setLocalMaerker({...constantes.selectedMarker})
+    setLocalMarker({...constantes.selectedMarker})
   },[constantes.selectedMarker])
-
 
   const LeftContent = props => <Avatar.Icon {...props} icon="map-marker" />;
   // const RightContent = props =><TouchableWithoutFeedback {...props} onPress={()=>{setConstantes({...constantes, showMarkerAdresseEdit:true})}}><Avatar.Icon style={{marginRight:15}} size={30} icon="square-edit-outline"/></TouchableWithoutFeedback>
@@ -20,7 +23,7 @@ export default function InfoMarkerModal({setDataToFetch, setConstantes, constant
   const changeData = (index, data)=>{
     const accesList2 = localMarker.accesList.map((acces, i)=>{
       return index != i ? {...acces}:{...data}});
-    setLocalMaerker({...localMarker, accesList:[...accesList2]})}
+    setLocalMarker({...localMarker, accesList:[...accesList2]})}
 
   const deleteMarker = () => {
     const {id} = {...localMarker}
@@ -28,7 +31,7 @@ export default function InfoMarkerModal({setDataToFetch, setConstantes, constant
     'Vous etes sur le point de supprimer définitivement ce marker. Êtes vous sur de vouloir continuer', 
     [{text: 'Non', onPress: () => console.log('Cancel Pressed'),style: 'cancel',},
      {text: 'Oui', onPress: () => {
-      setLocalMaerker({id:0, adresse:'', accesList:[]})
+      setLocalMarker({id:0, adresse:'', accesList:[]})
       setConstantes({
         ...constantes,
         spinner:true,
@@ -44,7 +47,7 @@ export default function InfoMarkerModal({setDataToFetch, setConstantes, constant
             spinner:false,
             isConnected:true,
             selectedMarker: {id:0, adresse:'', accesList:[]}})
-          getMarker(constantes.coordonates);},})}},]);};
+          geolock.getMarkers();},})}},]);};
 
   const updateMarker = () => {
     const item = {...localMarker}
@@ -62,8 +65,8 @@ export default function InfoMarkerModal({setDataToFetch, setConstantes, constant
           data: {
             adresse:item.adresse, 
             id:item.id, 
-            latitude: constantes.coordonates.latitude,
-            longitude : constantes.coordonates.longitude
+            latitude: coods.latitude,
+            longitude : coods.longitude
           },
           callback: () => {
             setConstantes({
@@ -71,11 +74,11 @@ export default function InfoMarkerModal({setDataToFetch, setConstantes, constant
               spinner:false,
               isConnected:true})
               setTimeout(() => {
-                getMarker(constantes.coordonates)
+                getMarker(coods)
               }, 1000)},})}},]);};
   
   // const back = ()=>setConstantes({...constantes, showMarkerAdresseEdit:false});
-  const add = ()=>setLocalMaerker({...localMarker, accesList:[...localMarker.accesList, {type:'', code:''}]})
+  const add = ()=>setLocalMarker({...localMarker, accesList:[...localMarker.accesList, {type:'', code:''}]})
   // const UneditableAccesRender = ({id, type, code, mk})=><View key={id} style={{display:'flex', flexDirection:'row', alignItems:'center'}}>
   // <Chip style={{flex:2}}>{type + ' => '}</Chip><Chip textStyle={{textAlign:'center'}} style={{flex:1, }}>{code}</Chip></View>
 
@@ -83,9 +86,9 @@ export default function InfoMarkerModal({setDataToFetch, setConstantes, constant
   // constantes.markerList.map(marker=>{if(marker.id==constantes.selectedMarker.id && accesList.length==0) {
   //   markerInfo = {...marker}
   //   setAccesList([...marker.accesList])}})
-  
+  const showInfoMarker = constantes.selectedMarker.id == 0 ? false : true;
   console.log('constante dans le infoMarkerModal ligne 80: '+ JSON.stringify(constantes.selectedMarker))
-  return (
+  return 
     // !constantes.showMarkerAdresseEdit?
     //   <Card>
     //     <Card.Title
@@ -99,6 +102,7 @@ export default function InfoMarkerModal({setDataToFetch, setConstantes, constant
     //       renderItem={({item}) => <UneditableAccesRender id={item.id} type={item.type} code={item.code} mk={item.mk}/>}
     //       keyExtractor={item => item.id}
     //       initialNumToRender={1}/></Card.Content></Card>:
+    <View  style={{position:'absolute', display:showInfoMarker?'flex':'none', top:0, left:0, right:0, zIndex:100}}>
       <Card>
         <Card.Title
           title="Information du Marker"
@@ -114,7 +118,7 @@ export default function InfoMarkerModal({setDataToFetch, setConstantes, constant
             label="Adresse"
             mode="outlined"
             placeholder="copier/coller l'adresse ici..."
-            onChangeText={(e)=>{setLocalMaerker({...localMarker, adresse:e})}}
+            onChangeText={(e)=>{setLocalMarker({...localMarker, adresse:e})}}
             value={localMarker.adresse}/>
           
             {localMarker.accesList.map((acces, i) =>{
@@ -142,11 +146,11 @@ export default function InfoMarkerModal({setDataToFetch, setConstantes, constant
                   defaultValue={acces.code}
                   onChangeText={codeText => {changeData(i,{...acces, code:codeText})}}/></View>})}
           <View style={{display:'flex', flexDirection:'row', flex:1}}>
-            <Button style={{flex:1}} mode='outlined' color='green' onPress={add}>Ajout acces</Button>
-            <Button style={{flex:1}} mode='outlined' color='red' onPress={deleteMarker}>supprimer</Button>
-            <Button style={{flex:1}} mode='outlined' color='blue' onPress={updateMarker}>Valider</Button>
+            <Button style={{flex:1}} mode='outlined' color='green' onPress={add}><Text>Ajout acces</Text></Button>
+            <Button style={{flex:1}} mode='outlined' color='red' onPress={deleteMarker}><Text>supprimer</Text></Button>
+            <Button style={{flex:1}} mode='outlined' color='blue' onPress={updateMarker}><Text>Valider</Text></Button>
           </View>
-          </Card.Content></Card>);
+          </Card.Content></Card></View>
 }
 
 // ##################### Styles:

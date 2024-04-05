@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {
   StyleSheet,
   Keyboard,
@@ -15,16 +15,23 @@ import AddMarkerModal from './src/components/AddMarkerModal';
 import InfoMarkerModal from './src/components/InfoMarkerModal';
 import geolock from './src/functions/geolock';
 import Markers from './src/components/Markers';
-
+import ConstantesProvider, { ConstantesContext } from './src/context/constantesContext';
+import CoordsProvider from './src/context/coordonatesContext';
+import CustomMapView from './src/components/CustomMapView';
+import Geolocation from 'react-native-geolocation-service';
 
 
 
 // ################## les Constantes:
-const {width, height} = Dimensions.get('window');
-const ASPECT_RATIO = width / height;
-const LATITUDE_DELTA = 0.0020;
-const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
-
+const initDimensions = Dimensions.get('window');
+const {width} = initDimensions
+let initialCoords = {longitude : 0, latitude : 0}
+requestLocationPermission().then(agrement=>{
+  console.log('agrement: '+agrement)
+  if (agrement){
+      Geolocation.getCurrentPosition(({coords}) => {
+          console.log('getCurrentPosition(): coords: '+JSON.stringify(coords))
+          initialCoords = {...coords}})}})
 
 
 
@@ -38,19 +45,19 @@ export default app = () => {
   
   
   // ################ Stats:
-  const [constantes, setConstantes] = useState({
-    // showMarkerAdresseEdit:false, // define whether the marker adresse must be editable
-    positionAcces:false, //
-    coordonates:{ // coordonate of the user on the map
-      longitude:2.347079571336508,
-      latitude:48.855188003520624,
-      latitudeDelta: LATITUDE_DELTA,
-      longitudeDelta: LONGITUDE_DELTA,},
-    markerList:[], // list of the markers sended from the api
-    showModal:false, // define whether the marker creator must be show
-    spinner:true, // whether to show the spinner
-    isConnected:true,
-    selectedMarker:{id:0, adresse:'', accesList:[]}}) // the marker info which as been selected by the user
+  // const [constantes, setConstantes] = useState({
+  //   // showMarkerAdresseEdit:false, // define whether the marker adresse must be editable
+  //   positionAcces:false, //
+  //   coordonates:{ // coordonate of the user on the map
+  //     longitude:2.347079571336508,
+  //     latitude:48.855188003520624,
+  //     latitudeDelta: LATITUDE_DELTA,
+  //     longitudeDelta: LONGITUDE_DELTA,},
+  //   markerList:[], // list of the markers sended from the api
+  //   showModal:false, // define whether the marker creator must be show
+  //   spinner:true, // whether to show the spinner
+  //   isConnected:true,
+  //   selectedMarker:{id:0, adresse:'', accesList:[]}}) // the marker info which as been selected by the user
   // const [poped, setPoped] = useState({id:0})
   const [dataToFetch, setDataToFetch] = useState({}); // données a transmettre à l'api
   // const [focusedMarker, setFocusedMarker] = useState({adresse:'',id:-1, accesList:[], showInfo:true})
@@ -58,104 +65,69 @@ export default app = () => {
 
 
 
-  useEffect(()=>{ //composantDidMount
-    console.log('=============> composantDidMount')
-    requestLocationPermission().then(agrement=>{
-      console.log('=============> agrement: '+agrement)
-      geolock.getPosition({ ...constantes }, setConstantes, setDataToFetch,'=============>');
-      console.log('=============> FIN composantDidMount')})},[])
+  // useEffect(()=>{ //composantDidMount
+  //   console.log('=============> composantDidMount')
+  //   requestLocationPermission().then(agrement=>{
+  //     console.log('=============> agrement: '+agrement)
+  //     geolock.getMarkers(setDataToFetch,'=============>');
+  //     console.log('=============> FIN composantDidMount')})},[])
 
-  useEffect(() => {
-    console.log('=============>=============> useEffect [dataToFetch] ')
-    if (Object.keys(dataToFetch).length) {
-      setConstantes({...constantes, spinner:true, isConnected:false,});
-      fetcher(dataToFetch, '=============>=============>');} 
-    console.log('=============>=============> FIN useEffect [dataToFetch] ')}, [dataToFetch] );
+  // useEffect(() => {
+  //   console.log('=============>=============> useEffect [dataToFetch] ')
+  //   if (Object.keys(dataToFetch).length) {
+  //     setConstantes({...constantes, spinner:true, isConnected:false,});
+  //     fetcher(dataToFetch, '=============>=============>');} 
+  //   console.log('=============>=============> FIN useEffect [dataToFetch] ')}, [dataToFetch] );
     
 
-  // ###################### les Fonctions:
+  console.log('// ###################### les Fonctions:')
 
-
-  const getMarker = (info, logMargin='') => {
-    geolock.getMarker({...constantes, showMarkerAdresseEdit:false, coordonates:{...info}},setConstantes,setDataToFetch,logMargin)};
-  const showModalSwitcher = () => {
-    // setFocusedMarker({adresse:'',id:-1, accesList:[]})
-    setConstantes({...constantes, showModal:true, showMarkerAdresseEdit:false})};
-  const hideModalSwitcher = () => {
-    Keyboard.dismiss();
-    // geolock.getMarker({...constantes, showModal:false},setConstantes,setDataToFetch,);
-    setConstantes({...constantes, showModal:false})};
-  const sendToBase = (e) => {
-    setConstantes({...constantes, spinner:true});
-    geolock.sendToBase(
-      adresse = e.adresse,
-      code = e.code,
-      accesType = e.accesType,
-      constantes, setConstantes, setDataToFetch,);}
-  const touchebleWithoutFeedbackOnPressHandle = ()=>{
-    const showInfoMarker = constantes.selectedMarker.id == 0 ? false : true;
-    Keyboard.dismiss;
-    if(showInfoMarker) {
-      setLocalMarkerList([])
-      setConstantes({...constantes, selectedMarker: {id:0, adresse:'', accesList:[]}, showMarkerAdresseEdit : false})};}
+// const {constantes} = useContext(ConstantesContext)
+//   const getMarker = (info, logMargin='') => {
+//     geolock.getMarker({...constantes, showMarkerAdresseEdit:false, coordonates:{...info}},setConstantes,setDataToFetch,logMargin)};
+//   const showModalSwitcher = () => {
+//     // setFocusedMarker({adresse:'',id:-1, accesList:[]})
+//     setConstantes({...constantes, showModal:true, showMarkerAdresseEdit:false})};
+//   const hideModalSwitcher = () => {
+//     Keyboard.dismiss();
+//     // geolock.getMarker({...constantes, showModal:false},setConstantes,setDataToFetch,);
+//     setConstantes({...constantes, showModal:false})};
+//   const sendToBase = (e) => {
+//     setConstantes({...constantes, spinner:true});
+//     geolock.sendToBase(
+//       adresse = e.adresse,
+//       code = e.code,
+//       accesType = e.accesType,
+//       constantes, setConstantes, setDataToFetch,);}
+//   const touchebleWithoutFeedbackOnPressHandle = ()=>{
+//     const showInfoMarker = constantes.selectedMarker.id == 0 ? false : true;
+//     Keyboard.dismiss;
+//     if(showInfoMarker) {
+//       setLocalMarkerList([])
+//       setConstantes({...constantes, selectedMarker: {id:0, adresse:'', accesList:[]}, showMarkerAdresseEdit : false})};}
 
       
-  //##################### RENDER:
-  if (constantes.positionAcces) {
-    console.log('PART II');
-    console.log('coordonates de MapView: '+JSON.stringify(constantes.coordonates))
-    console.log('selected marker id : '+constantes.selectedMarker.id)
-    const showInfoMarker = constantes.selectedMarker.id == 0 ? false : true;
-    console.log('must show marker info  & acces: '+showInfoMarker)
+//   //##################### RENDER:
+//   if (constantes.positionAcces) {
+//     console.log('PART II');
+//     // console.log('coordonates de MapView: '+JSON.stringify(constantes.coordonates))
+//     console.log('selected marker id : '+constantes.selectedMarker.id)
+//     const showInfoMarker = constantes.selectedMarker.id == 0 ? false : true;
+//     console.log('must show marker info  & acces: '+showInfoMarker)
     return (
-      <KeyboardAvoidingView keyboardVerticalOffset={30} behavior={'height'} style={{flex: 1}}>
-        {<View  style={{position:'absolute', display:showInfoMarker?'flex':'none', top:0, left:0, right:0, zIndex:100}}>
-          <InfoMarkerModal 
-            setDataToFetch = {setDataToFetch} 
-            setConstantes = {setConstantes} 
-            constantes = {constantes}
-            getMarker = {getMarker}/></View>}
-        <TouchableWithoutFeedback onPress={()=>touchebleWithoutFeedbackOnPressHandle()}>
-          <View style={{flex: 1, flexDirection: 'column'}}>
-            <View style={{flex: 1000,}}>
-              <MapView
-                customMapStyle={mapStyle}
-                showsCompass={false}
-                  // onUserLocationChange={info =>getMarker(info.nativeEvent.coordinate)}
-                onRegionChangeComplete={info =>{if(!showInfoMarker)getMarker(info)}}
-                showsUserLocation
-                provider={PROVIDER_GOOGLE}
-                style={{flex:1}}
-                loadingEnabled
-                initialRegion={constantes.coordonates}>
-                  <Markers 
-                    constantes={constantes} 
-                    setConstantes={setConstantes}
-                    getMarker={getMarker}/></MapView>
-              <FAB
-                icon={constantes.showModal ? 'minus' : 'plus'}
-                style={styles.fab}
-                onPress={constantes.showModal ? hideModalSwitcher : showModalSwitcher}/>
-              <FAB
-                loading={constantes.spinner}
-                small
-                icon="access-point-network-off"
-                style={styles.networkIcon}
-                onPress={() => {}}
-                visible={!constantes.isConnected}/></View>
-            <View style={{flex: constantes.showModal?0:1,}}>
-              <AddMarkerModal
-                showModal = {constantes.showModal}
-                sendToBase={(e)=>sendToBase(e)}
-                hideModalSwitcher = {hideModalSwitcher}/></View></View></TouchableWithoutFeedback></KeyboardAvoidingView>);}
-    else {
-      console.log('PART I');
-      return <View style={{flex: 1, flexDirection: 'column'}}>
-        <FAB
-          loading={constantes.spinner}
-          small
-          icon="access-point-network-off"
-          style={styles.networkIcon}/></View>}
+      <CoordsProvider value={{initDimensions,initialCoords}}>
+        <ConstantesProvider>
+          <KeyboardAvoidingView keyboardVerticalOffset={30} behavior={'height'} style={{flex: 1}}>
+            <InfoMarkerModal/>
+            <CustomMapView/></KeyboardAvoidingView></ConstantesProvider></CoordsProvider>);
+    // else {
+    //   console.log('PART I');
+    //   return <View style={{flex: 1, flexDirection: 'column'}}>
+    //     <FAB
+    //       loading={constantes.spinner}
+    //       small
+    //       icon="access-point-network-off"
+    //       style={styles.networkIcon}/></View>}
 };
 
 // ##################### Styles:

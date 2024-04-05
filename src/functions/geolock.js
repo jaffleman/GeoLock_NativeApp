@@ -1,41 +1,29 @@
+import { useContext } from 'react';
 import Geolocation from 'react-native-geolocation-service';
+import { ConstantesContext } from '../context/constantesContext';
+import { CoordonatesContext } from '../context/coordonatesContext';
+import fetcher from './fetcher';
 
 
-async function getMarkerExt(constantes,setConstantes,setDataToFetch, logMarging) {
-  console.log(logMarging+' getMarkerExt');
-  // console.log('constantes.coordonates pour fetch '+JSON.stringify(constantes.coordonates))
-  if (constantes.showModal === false) {
-    try {
-      setDataToFetch({
+
+async function getMarkerExt(coords,callback) {
+  console.log(' getMarkerExt');
+      fetcher({
         route: 'findAllMarkers&Acces',
         method: 'POST',
-        data: {...constantes.coordonates},
-        callback: e => {
-          console.log(logMarging+' reponse du fetch : '+ JSON.stringify(e));
+        data: {...coords},
+        callback2: e => {
+          console.log(' reponse du fetch : '+ JSON.stringify(e));
           if (e.isConnected){ 
-            setConstantes({
-              ...constantes,
-              markerList:[...e.jData],
-              positionAcces:true,
-              spinner:false,
-              isConnected:true})}},});
-      return true;
-    } catch (error) { console.log(logMarging+' error ocurre in trying to setDataToFetch by getMarkerExt...')}}
-  else{ setConstantes({...constantes}) }}
+            callback(e.jData)}},});}
 
 
 export default geolock = {
-  getPosition: (constantes, setConstantes, setDataToFetch , logMarging = '')=> { 
-    console.log(logMarging+' geolock.getposition()');
-    setTimeout(() => {
-      Geolocation.getCurrentPosition(({coords}) => {
-        // console.log('coords de geolocation.getCurrentPosition: '+JSON.stringify(coords));
-        getMarkerExt({...constantes, coordonates:{...constantes.coordonates, longitude:coords.longitude, latitude:coords.latitude}}, 
-          setConstantes, setDataToFetch, logMarging)},
-        error => console.log(logMarging+' errors: ', error.code, error.message));      
-    }, 500);},
 
-  getMarker: (constantes, setConstantes, setDataToFetch, logMargin='') =>getMarkerExt(constantes, setConstantes, setDataToFetch, logMargin),
+  getPosition: ( setDataToFetch , logMarging = '' ) => { 
+    ;},
+
+  getMarkers: (coords,callback) => {getMarkerExt(coords,callback)}, 
 
   sendToBase: (
     adresse,
@@ -58,7 +46,7 @@ export default geolock = {
         callback: e => {
           // console.log('reponse du fetch : ' + JSON.stringify(e));
           if (e.isConnected) {
-            getMarkerExt(constantes, setConstantes, setDataToFetch)
+            getMarkerExt()
             setTimeout(() => {
              setConstantes({
             ...constantes, 

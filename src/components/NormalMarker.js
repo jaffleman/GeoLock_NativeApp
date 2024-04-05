@@ -1,6 +1,9 @@
 import { Marker } from "react-native-maps";
-import React from "react";
-export default  NormalMarker = ({marker, color, constantes, setConstantes}) => {
+import React, { useContext } from "react";
+import { ConstantesContext } from "../context/constantesContext";
+export default  NormalMarker = ({marker, color}) => {
+    const {selectMarker} = useContext(ConstantesContext)
+    console.log("normal Marker "+marker.id)
     return <Marker
         draggable={false}
         key={marker.id}
@@ -8,9 +11,5 @@ export default  NormalMarker = ({marker, color, constantes, setConstantes}) => {
         coordinate={{
             longitude: marker.longitude,
             latitude: marker.latitude,}}
-        onPress={()=>{
-            setConstantes({
-                ...constantes,
-                selectedMarker: {...marker}})}}
-        ></Marker>
+        onPress={()=>{selectMarker({...marker})}}></Marker>
 }
