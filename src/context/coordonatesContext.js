@@ -30,13 +30,9 @@ const CoordsProvider = (props) => {
         //                 console.log('coordonatesContext: setCoords(): coords')}})},[])
     
     const saveCoords = (newCoords)=>{
-        console.log('saving coords: '+JSON.stringify(newCoords))
-        const {longitude, latitude} = newCoords;
-        setCoords({
-            ...coords,
-            longitude,
-            latitude })}
-    console.log('coordonates: '+JSON.stringify(coords))
+        console.log('CoordsProvider: saving coords: '+JSON.stringify(newCoords))
+        // const {longitude, latitude} = newCoords;
+        setCoords({...newCoords})}
   return <CoordonatesContext.Provider value={{ coords, saveCoords }}>{props.children}</CoordonatesContext.Provider>  
 }
 

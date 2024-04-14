@@ -14,18 +14,22 @@ import { ConstantesContext } from "../context/constantesContext";
 const { height, width} = Dimensions.get('window');
 
 export default CustomMapView = ()=>{
-    const {constantes} = useContext(ConstantesContext)
+    const {constantes, 
+      deselectMarker, 
+      showCreateMarkerModale,
+      hideCreateMarkerModale} = useContext(ConstantesContext)
     const {coords, saveCoords} = useContext(CoordonatesContext)
     console.log('CustomMapView')
-    console.log('coords: '+JSON.stringify(coords))
+    console.log('CustomMapView:coords: '+JSON.stringify(coords))
     return <TouchableWithoutFeedback onPress={()=>{}}>
         <View style={{flex: 1, flexDirection: 'column'}}>
             <View style={{flex: 1000,}}>
                 <MapView
+                    onPress={()=>deselectMarker()}
                     customMapStyle={mapStyle}
                     showsCompass={false}
                         //onUserLocationChange={info =>getMarker(info.nativeEvent.coordinate)}
-                    onRegionChangeComplete={info =>{saveCoords(info)}}
+                    onRegionChangeComplete={info =>saveCoords(info)}
                     showsUserLocation
                     provider={PROVIDER_GOOGLE}
                     style={{flex:1}}
@@ -36,14 +40,14 @@ export default CustomMapView = ()=>{
                 <FAB
                     icon={constantes.showModal ? 'minus' : 'plus'}
                     style={styles.fab}
-                    onPress={()=>{}}/>
+                    onPress={()=>{constantes.showModal?hideCreateMarkerModale():showCreateMarkerModale()}}/>
                 <FAB
                     loading={constantes.spinner}
                     small
                     icon="access-point-network-off"
                     style={styles.networkIcon}
                     onPress={() => {}}
-                    visible={!constantes.isConnected}/></View>
+                    visible={constantes.isConnected}/></View>
             <View style={{flex: constantes.showModal?0:1,}}>
                 </View></View></TouchableWithoutFeedback>
     

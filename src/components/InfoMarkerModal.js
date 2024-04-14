@@ -7,11 +7,13 @@ import geolock from '../functions/geolock';
 
 
 export default function InfoMarkerModal() { 
-  const {coods} = React.useContext(CoordonatesContext)
+  console.log('InfoMarkerModal')
+  const {coords} = React.useContext(CoordonatesContext)
   const {constantes, setConstantes} = React.useContext(ConstantesContext)
   const adresseRef = React.useRef(null)
   const [localMarker, setLocalMarker] = React.useState({...constantes.selectedMarker});
   React.useEffect(()=>{
+    console.log('IndoMarkerModal:useEffect')
     setLocalMarker({...constantes.selectedMarker})
   },[constantes.selectedMarker])
 
@@ -42,12 +44,12 @@ export default function InfoMarkerModal() {
         data: {id:id},
         callback: () => {
           console.log('setConstante after fetch reponse ok')
-          setConstantes({
-            ...constantes,
-            spinner:false,
-            isConnected:true,
-            selectedMarker: {id:0, adresse:'', accesList:[]}})
-          geolock.getMarkers();},})}},]);};
+          geolock.getMarkers(coords, (jData)=>{
+            setConstantes({
+              ...constantes,
+              markerList:[...jData],
+              spinner:false,
+              isConnected:true,})});},})}},]);};
 
   const updateMarker = () => {
     const item = {...localMarker}
@@ -65,8 +67,8 @@ export default function InfoMarkerModal() {
           data: {
             adresse:item.adresse, 
             id:item.id, 
-            latitude: coods.latitude,
-            longitude : coods.longitude
+            latitude: coords.latitude,
+            longitude : coords.longitude
           },
           callback: () => {
             setConstantes({
@@ -87,8 +89,8 @@ export default function InfoMarkerModal() {
   //   markerInfo = {...marker}
   //   setAccesList([...marker.accesList])}})
   const showInfoMarker = constantes.selectedMarker.id == 0 ? false : true;
-  console.log('constante dans le infoMarkerModal ligne 80: '+ JSON.stringify(constantes.selectedMarker))
-  return 
+  console.log('infoMarkerModal:selectedMarker: '+ JSON.stringify(constantes.selectedMarker))
+   
     // !constantes.showMarkerAdresseEdit?
     //   <Card>
     //     <Card.Title
@@ -102,7 +104,7 @@ export default function InfoMarkerModal() {
     //       renderItem={({item}) => <UneditableAccesRender id={item.id} type={item.type} code={item.code} mk={item.mk}/>}
     //       keyExtractor={item => item.id}
     //       initialNumToRender={1}/></Card.Content></Card>:
-    <View  style={{position:'absolute', display:showInfoMarker?'flex':'none', top:0, left:0, right:0, zIndex:100}}>
+    return(<View  style={{position:'relative', display:showInfoMarker?'flex':'none', top:0, left:0, right:0, zIndex:100}}>
       <Card>
         <Card.Title
           title="Information du Marker"
@@ -150,7 +152,7 @@ export default function InfoMarkerModal() {
             <Button style={{flex:1}} mode='outlined' color='red' onPress={deleteMarker}><Text>supprimer</Text></Button>
             <Button style={{flex:1}} mode='outlined' color='blue' onPress={updateMarker}><Text>Valider</Text></Button>
           </View>
-          </Card.Content></Card></View>
+          </Card.Content></Card></View>)
 }
 
 // ##################### Styles:

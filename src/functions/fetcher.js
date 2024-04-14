@@ -23,7 +23,7 @@ export default async function fetcher({route, method, data, callback}, logMargin
   if (isConnected) {
     console.log(logMargin+' Fetch reponse ok...')
     jData = await fetchData.json();}
-    console.log(logMargin+' contenu de jData: '+JSON.stringify(jData))
+    // console.log(logMargin+' contenu de jData: '+JSON.stringify(jData))
     if(typeof jData === 'object' && !('acces_id' in jData)) jData = jData.map(marker=>{return {...marker}})
   callback({isConnected, jData});
 }
