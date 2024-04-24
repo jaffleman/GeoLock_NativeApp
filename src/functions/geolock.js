@@ -54,4 +54,9 @@ export default geolock = {
             spinner:false, 
             isConnected:e.isConnected}) 
             }, 100);}},});},
+  objectComparator : (object1, object2) => {
+    if (typeof(object1)==='object') {
+      
+    }
+  }
 }

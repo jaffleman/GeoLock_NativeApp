@@ -3,7 +3,11 @@ import React, { useContext } from "react";
 import { ConstantesContext } from "../context/constantesContext";
 export default  NormalMarker = ({marker, color}) => {
     const {selectMarker} = useContext(ConstantesContext)
-    console.log("normal Marker "+marker.id)
+    if (color==='#1100ee') {
+        console.log("normal Marker: "+marker.id)
+    } else {
+        console.log("selected Marker: "+marker.id)
+    }
     return <Marker
         draggable={false}
         key={marker.id}

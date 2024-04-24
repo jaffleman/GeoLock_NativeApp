@@ -1,9 +1,15 @@
 import {StyleSheet, View} from 'react-native';
 import * as React from 'react';
 import {Avatar, Card, TextInput} from 'react-native-paper';
+import { ConstantesContext } from '../context/constantesContext';
+import geolock from '../functions/geolock';
+import { CoordonatesContext } from '../context/coordonatesContext';
 
 const LeftContent = props => <Avatar.Icon {...props} icon="map-marker" />;
-export default function AddMarkerModal({showModal, sendToBase, hideModalSwitcher}) {
+export default function AddMarkerModal() {
+  console.log("**************AddMarkerModal")
+  const {constantes, createMarker} = React.useContext(ConstantesContext)
+  const {forceSaveRefCoords} = React.useContext(CoordonatesContext)
   const [adresse, setAdresse] = React.useState('');
   const [accesType, setAccesType] = React.useState('');
   const [code, setCode] = React.useState('');
@@ -11,11 +17,18 @@ export default function AddMarkerModal({showModal, sendToBase, hideModalSwitcher
   const accesTypeRef = React.useRef(null)
   const codeRef = React.useRef(null)
   React.useEffect(()=>{
-    if(showModal) adresseRef.current.focus();
+    console.log('AddMarkerModal is Monted')
+    return ()=>{
+      forceSaveRefCoords;
+      console.log('AddMarkerModal is Demonted')
+    }
+  },[])
+  React.useEffect(()=>{
+    if(constantes.showModal) adresseRef.current.focus();
     else{
       setAdresse('');
       setAccesType('');
-      setCode('');}},[showModal])
+      setCode('');}},[constantes.showModal])
   
   return (
     <Card>
@@ -50,7 +63,7 @@ export default function AddMarkerModal({showModal, sendToBase, hideModalSwitcher
             onChangeText={type => setAccesType(type)}/>
           <TextInput
             returnKeyType='send'
-            onSubmitEditing={()=>sendToBase({accesType, code, adresse})}
+            onSubmitEditing={()=>createMarker({accesType, code, adresse})}
             ref={codeRef}
             autoCapitalize='characters'
             value={code}

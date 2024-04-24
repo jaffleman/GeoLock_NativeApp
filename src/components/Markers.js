@@ -5,17 +5,16 @@ import { ConstantesContext } from "../context/constantesContext";
 
 
 
-export default Markers = () => {
-    console.log("Markers")
+export default Markers = ({coords}) => {
+    console.log("**************Markers")
     const {constantes} = useContext(ConstantesContext)
-    console.log('=============>=============>=============> Markers')
     if (constantes.showModal) {
-        console.log('=============>=============>=============> mode creation d1 marker')
-        return [<EditMarker key={'editMarker'} />]}
+        console.log('mode creation d1 marker')
+        return [<EditMarker key={'editMarker'} coords={coords} />]}
 
     else{
-        console.log('=============>=============>=============> mode affichage des markers')
-        console.log('=============>=============>=============> nombre de marker: '+constantes.markerList.length)
+        console.log('mode affichage des markers')
+        console.log('nombre de marker: '+constantes.markerList.length)
         return constantes.markerList.map((marker)=>{
             return <NormalMarker 
                 marker={marker}

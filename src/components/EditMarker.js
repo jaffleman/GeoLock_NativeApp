@@ -1,22 +1,13 @@
 import React, { useContext } from "react";
 import { Marker } from "react-native-maps";
-import { ConstantesContext } from "../context/constantesContext";
-import geolock from "../functions/geolock";
 import { CoordonatesContext } from "../context/coordonatesContext";
 
-export default EditMarker = () => {
-  const {coords} = useContext(CoordonatesContext)
-    const {constantes} = useContext(ConstantesContext)
+export default EditMarker = ({coords}) => {
+  console.log('EditMarker creation')
+  const {saveMarkerCoords}= React.useContext(CoordonatesContext)
     return (<Marker
         key={0}
-        onDragEnd={e=>geolock.getMarkers({
-          ...coords, 
-          longitude:e.nativeEvent.coordinate.longitude, 
-          latitude:e.nativeEvent.coordinate.latitude, },'=============>=============>=============>')}
+        onDragEnd={e=>saveMarkerCoords(e.nativeEvent.coordinate)}
         draggable={true}
-        coordinate={{
-          longitude: coords.longitude,
-          latitude: coords.latitude,
-        }}
-        pinColor={'red'}/>)
-}
+        coordinate={coords}
+        pinColor={'red'}/>)}

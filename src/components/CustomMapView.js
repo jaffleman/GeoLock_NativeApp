@@ -1,8 +1,7 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import {
     StyleSheet,
     View,
-    TouchableWithoutFeedback,
     Dimensions,
   } from 'react-native';
 import {FAB,} from 'react-native-paper';
@@ -11,45 +10,49 @@ import Markers from "./Markers";
 import { CoordonatesContext } from "../context/coordonatesContext";
 import MapView, {PROVIDER_GOOGLE} from 'react-native-maps'; // remove PROVIDER_GOOGLE import if not using Google Maps
 import { ConstantesContext } from "../context/constantesContext";
-const { height, width} = Dimensions.get('window');
+const {width} = Dimensions.get('window');
 
 export default CustomMapView = ()=>{
-    const {constantes, 
-      deselectMarker, 
-      showCreateMarkerModale,
-      hideCreateMarkerModale} = useContext(ConstantesContext)
+  const {constantes, 
+    deselectMarker, 
+    showCreateMarkerModale,
+    hideCreateMarkerModale} = useContext(ConstantesContext)
     const {coords, saveCoords} = useContext(CoordonatesContext)
-    console.log('CustomMapView')
-    console.log('CustomMapView:coords: '+JSON.stringify(coords))
-    return <TouchableWithoutFeedback onPress={()=>{}}>
-        <View style={{flex: 1, flexDirection: 'column'}}>
-            <View style={{flex: 1000,}}>
-                <MapView
-                    onPress={()=>deselectMarker()}
-                    customMapStyle={mapStyle}
-                    showsCompass={false}
-                        //onUserLocationChange={info =>getMarker(info.nativeEvent.coordinate)}
-                    onRegionChangeComplete={info =>saveCoords(info)}
-                    showsUserLocation
-                    provider={PROVIDER_GOOGLE}
-                    style={{flex:1}}
-                    loadingEnabled
-                    // initialRegion={coords}
-                    region={coords}
-                    ><Markers/></MapView>
-                <FAB
-                    icon={constantes.showModal ? 'minus' : 'plus'}
-                    style={styles.fab}
-                    onPress={()=>{constantes.showModal?hideCreateMarkerModale():showCreateMarkerModale()}}/>
-                <FAB
-                    loading={constantes.spinner}
-                    small
-                    icon="access-point-network-off"
-                    style={styles.networkIcon}
-                    onPress={() => {}}
-                    visible={constantes.isConnected}/></View>
-            <View style={{flex: constantes.showModal?0:1,}}>
-                </View></View></TouchableWithoutFeedback>
+    console.log('**************CustomMapView')
+    const [customCoords, setCustomCoords]  = useState({...coords})
+    console.log('CustomMapView:user coords on map: '+JSON.stringify(coords))
+    const handleRegionChange = (info)=>{
+      setCustomCoords({...info});
+      saveCoords(info)}
+
+    return <View style={{flex: 1000,}}>
+            <MapView
+                onPress={()=>deselectMarker()}
+                customMapStyle={mapStyle}
+                showsCompass={false}
+                    //onUserLocationChange={info =>getMarker(info.nativeEvent.coordinate)}
+                onRegionChangeComplete={info =>handleRegionChange(info)}
+                showsUserLocation
+                provider={PROVIDER_GOOGLE}
+                style={{flex:1}}
+                loadingEnabled
+                // initialRegion={coords}
+                region={coords}
+                ><Markers coords={customCoords}/></MapView>
+            <FAB
+                icon={constantes.showModal ? 'minus' : 'plus'}
+                style={styles.fab}
+                onPress={()=>{
+                  constantes.showModal?
+                  hideCreateMarkerModale()
+                  :showCreateMarkerModale()}}/>
+            <FAB
+                loading={constantes.spinner}
+                small
+                icon="access-point-network-off"
+                style={styles.networkIcon}
+                onPress={() => {}}
+                visible={constantes.isConnected}/></View>
     
 
 }

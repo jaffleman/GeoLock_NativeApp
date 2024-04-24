@@ -9,15 +9,16 @@ export default async function fetcher({route, method, data, callback}, logMargin
 
   let fetchData = {};
   let isConnected = true;
-  console.log(logMargin+' Envoie du Fetch...');
   // ipv6
+  console.log(logMargin+' Envoie du Fetch ipv6: '+route);
   fetchData = await fetch(`${REACT_APP_ROUTE}${route}`, lePaquet)
-    .catch(err => {isConnected = false; console.log(logMargin+' echec envoi IpV6')});
+    .catch(err => {isConnected = false; console.log(logMargin+' echec envoi IpV6 => err:'+ err)});
   if (!isConnected) {
     isConnected = true;
     // ipv4
+    console.log(logMargin+' Envoie du Fetch ipv4: '+route);
     fetchData = await fetch(`${LOCAL_APP_ROUTE2}${route}`, lePaquet)
-    .catch( err => {(isConnected = false); console.log(logMargin+' echec envoi IpV4')});
+    .catch( err => {(isConnected = false); console.log(logMargin+' echec envoi IpV4 =>'+err)});
   }
   let jData = {};
   if (isConnected) {
