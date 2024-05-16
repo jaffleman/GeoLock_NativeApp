@@ -11,8 +11,11 @@ export const ConstantesContext = createContext({
     setConstantes : ()=>{},
     showFechedMarkers: ()=>{},
     createMarker : ()=>{}, 
+    createAcces: ()=>{},
+    updateAcces: ()=>{},
     updateMarker : ()=>{},
     deleteMarker : ()=>{},
+    deleteAcces : ()=>{},
     fetchMode: ()=>{},
     refreshConstantes: ()=>{},
     selectMarker: ()=>{},
@@ -90,35 +93,55 @@ const ConstantesProvider = ({ children }) => {
         setConstantes({
             ...constantes, 
             showModal:false, showMarkerAdresseEdit:true})}
-    const updateMarker = (item)=>{
+
+    const updateMarker = (item, callback)=>{
+      console.log("updating Marker: "+JSON.stringify(item))
         setConstantes({
-            ...constantes,
-            spinner:true,
-            selectedMarker:{id:0, adresse:'', accesList:[]}});
+          ...constantes,
+          spinner:true,
+          selectedMarker:{id:0, adresse:'', accesList:[]}});
+        if ('id' in item) {
           fetcher({
             route: 'updateMarker',
             method: 'put',
-            data: {
-              adresse:item.adresse, 
-              id:item.id, 
+            data: {...item, 
               latitude: coords.latitude,
-              longitude : coords.longitude
-            },
-            callback: () => {
-              setConstantes({
-                ...constantes,
-                spinner:false,
-                isConnected:true})
-                setTimeout(() => {
-                  getMarker(coords)
-                }, 1000)},})}
-    
+              longitude : coords.longitude},
+            callback})}}
+
+
+    const createAcces = (item, callback)=>{  
+      console.log("creating acces: "+JSON.stringify(item))
+            fetcher({
+              route: 'createAcces', 
+              method: 'POST',
+              data: item,
+              callback})}
+        
+    const updateAcces = (item, callback)=>{
+      console.log("updating acces: "+JSON.stringify(item))
+          fetcher({
+            route: 'updateAcces',
+            method: 'PUT',
+            data: item,
+            callback})}
+              
+    const deleteAcces = (item)=>{  
+      console.log("deleting acces: "+JSON.stringify(item))      
+          fetcher({
+            route: 'deleteAcces',
+            method: 'DELETE',
+            data: item,
+            callback: ()=>{}})}
+            
+            
+
     const createMarker = ({adresse, code, accesType})=>{
         const {showModal,coordonates} = constantes;
         console.log('createMarker code: '+code)
         if (!code) return alert('vous devez entrer un code!');
         fetcher({
-          route: 'create',
+          route: 'createMarker',
           method: 'POST',
           data: {
             adresse: adresse,
@@ -144,8 +167,8 @@ const ConstantesProvider = ({ children }) => {
         spinner:true,
         selectedMarker:{id:0, adresse:'', accesList:[]}});
       fetcher({
-        route: 'delete',
-        method: 'delete',
+        route: 'deleteMarker',
+        method: 'DELETE',
         data: {id:id},
         callback: () => {
           console.log('refresh Markers List => forceSaveRefCoords')
@@ -162,7 +185,10 @@ const ConstantesProvider = ({ children }) => {
         constantes,
         createMarker, 
         updateMarker,
+        createAcces,
+        updateAcces,
         deleteMarker,
+        deleteAcces,
         setConstantes,
         showFechedMarkers,
         fetchMode,

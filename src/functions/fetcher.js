@@ -11,6 +11,7 @@ export default async function fetcher({route, method, data, callback}, logMargin
   let isConnected = true;
   // ipv6
   console.log(logMargin+' Envoie du Fetch ipv6: '+route);
+  console.log('request body: '+lePaquet.body)
   fetchData = await fetch(`${REACT_APP_ROUTE}${route}`, lePaquet)
     .catch(err => {isConnected = false; console.log(logMargin+' echec envoi IpV6 => err:'+ err)});
   if (!isConnected) {

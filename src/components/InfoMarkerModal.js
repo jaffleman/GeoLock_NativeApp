@@ -1,14 +1,13 @@
 import {StyleSheet, Alert, TouchableWithoutFeedback, View, FlatList} from 'react-native';
 import * as React from 'react';
 import {Avatar, Button, Card, Text, TextInput, Chip, Divider} from 'react-native-paper';
-import { CoordonatesContext } from '../context/coordonatesContext';
 import { ConstantesContext } from '../context/constantesContext';
 import geolock from '../functions/geolock';
 
 
 export default function InfoMarkerModal() { 
   console.log('**************InfoMarkerModal')
-  const {constantes, updateMarker, deleteMarker} = React.useContext(ConstantesContext)
+  const {constantes, updateAcces, updateMarker, createAcces, deleteAcces, deleteMarker} = React.useContext(ConstantesContext)
   const adresseRef = React.useRef(null)
   const [isEditable, setIsEditable] = React.useState(false)
   const [localMarker, setLocalMarker] = React.useState({...constantes.selectedMarker, accesList:[...constantes.selectedMarker.accesList]});
@@ -33,12 +32,21 @@ export default function InfoMarkerModal() {
      {text: 'Oui', onPress: () => {setLocalMarker({id:0, adresse:'', accesList:[]}); deleteMarker() }},]);};
 
   const handleUpdateButton = () => {
-    Alert.alert('Attention', 
+    const {newMarker, newAcces, updatedAcces, deletedAcces} = geolock.objectComparator(constantes.selectedMarker, localMarker)
+    
+       Alert.alert('Attention', 
     'Vous etes sur le point de modifier définitivement ce marker. Êtes vous sur de vouloir continuer', 
     [{text: 'Non', onPress: () => console.log('Cancel Pressed'), style: 'cancel',},
-     {text: 'Oui', onPress: () => { updateMarker({...localMarker}) }},]);};
+     {text: 'Oui', onPress: () => {
+      updateMarker(newMarker, ()=> {})
+      createAcces(newAcces, ()=>{})
+      updateAcces(updatedAcces, ()=>{} )
+      deleteAcces(deletedAcces)
+    }},]);};
 
-  const add = ()=>setLocalMarker({...localMarker, accesList:[...localMarker.accesList, {type:'', code:''}]})
+
+
+  const add = ()=>setLocalMarker({...localMarker, accesList:[...localMarker.accesList, {id:0, type:'', code:'', mk:localMarker.id}]})
 
   return(
     <Card>
