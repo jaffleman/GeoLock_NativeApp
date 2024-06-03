@@ -50,7 +50,7 @@ const CoordsProvider = (props) => {
     const saveCoords = (newCoords)=>{
         const longitudeDif = Math.abs(refCoords.longitude - newCoords.longitude);
         const latitudeDif = Math.abs(refCoords.latitude - newCoords.latitude);
-        if (longitudeDif>0.003 || latitudeDif>0.003) {
+        if (longitudeDif>0.001 || latitudeDif>0.001) {
             console.log('fetch call for new coords')
             setRefCoords({...newCoords})}
         console.log('CoordsProvider: saving coords: '+JSON.stringify(newCoords))

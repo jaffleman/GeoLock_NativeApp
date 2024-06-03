@@ -1,16 +1,20 @@
 import {StyleSheet, Alert, TouchableWithoutFeedback, View, FlatList} from 'react-native';
 import * as React from 'react';
-import {Avatar, Button, Card, Text, TextInput, Chip, Divider} from 'react-native-paper';
+import {Avatar, Button, Card, Text, Switch, TextInput, Chip, Divider} from 'react-native-paper';
 import { ConstantesContext } from '../context/constantesContext';
 import geolock from '../functions/geolock';
+import { CoordonatesContext } from '../context/coordonatesContext';
+import AccesCode from './AccesCode';
 
 
 export default function InfoMarkerModal() { 
   console.log('**************InfoMarkerModal')
-  const {constantes, updateAcces, updateMarker, createAcces, deleteAcces, deleteMarker} = React.useContext(ConstantesContext)
+  const {constantes, deselectMarker, setConstantes, updateAcces, updateMarker, createAcces, deleteAcces, deleteMarker} = React.useContext(ConstantesContext)
+  const {forceSaveRefCoords} = React.useContext(CoordonatesContext)
   const adresseRef = React.useRef(null)
   const [isEditable, setIsEditable] = React.useState(false)
   const [localMarker, setLocalMarker] = React.useState({...constantes.selectedMarker, accesList:[...constantes.selectedMarker.accesList]});
+
   React.useEffect(()=>{
     console.log('InfoMarkerModal:useEffect')
     setLocalMarker({...constantes.selectedMarker})
@@ -19,7 +23,7 @@ export default function InfoMarkerModal() {
   },[constantes.selectedMarker])
 
   const LeftContent = props => <Avatar.Icon {...props} icon="map-marker"/>;
-  const RightContent = props =><TouchableWithoutFeedback onPress={()=>setIsEditable(true)}><Avatar.Icon {...props} icon="map-marker"/></TouchableWithoutFeedback> ;
+  const RightContent = props =><TouchableWithoutFeedback onPress={()=>setIsEditable(true)}><Avatar.Icon style={{marginRight:10}} {...props} icon="circle-edit-outline"/></TouchableWithoutFeedback> ;
   const changeData = (index, data)=>{
     const accesList2 = localMarker.accesList.map((acces, i)=>{
       return index != i ? {...acces}:{...data}});
@@ -33,16 +37,23 @@ export default function InfoMarkerModal() {
 
   const handleUpdateButton = () => {
     const {newMarker, newAcces, updatedAcces, deletedAcces} = geolock.objectComparator(constantes.selectedMarker, localMarker)
-    
+    const commandeTable = [];
+    commandeTable.push(()=>console.log('//////////////////////////commandeTable[0]=>executé...'))
+    if (newMarker.id>0) commandeTable.push(()=>updateMarker(newMarker))
+    if (newAcces.length) commandeTable.push(()=>createAcces(newAcces))
+    if (updatedAcces.length) commandeTable.push(()=>updateAcces(updatedAcces))
+    if(deletedAcces.length) commandeTable.push(()=>deleteAcces(deletedAcces))
        Alert.alert('Attention', 
     'Vous etes sur le point de modifier définitivement ce marker. Êtes vous sur de vouloir continuer', 
     [{text: 'Non', onPress: () => console.log('Cancel Pressed'), style: 'cancel',},
      {text: 'Oui', onPress: () => {
-      updateMarker(newMarker, ()=> {})
-      createAcces(newAcces, ()=>{})
-      updateAcces(updatedAcces, ()=>{} )
-      deleteAcces(deletedAcces)
-    }},]);};
+      commandeTable.map(commande=>{
+        console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+        commande()
+      })
+      deselectMarker()
+      forceSaveRefCoords()
+            }},]);};
 
 
 
@@ -57,11 +68,12 @@ export default function InfoMarkerModal() {
       <Card.Content>
       <TextInput
         editable={ isEditable}
+        
         returnKeyType='next'
         onSubmitEditing={()=>accesTypeRef.current.focus()}
         blurOnSubmit={false}
         ref={adresseRef}
-        style={{height:35}}
+        style={{height:35, textAlign: 'auto'}}
         label="Adresse"
         mode="outlined"
         placeholder="copier/coller l'adresse ici..."
@@ -72,32 +84,8 @@ export default function InfoMarkerModal() {
         
           {[...isEditable?localMarker.accesList: constantes.selectedMarker.accesList].map((acces, i) =>{
             console.log('InfoMarkerModal: acces de accesList: ' +JSON.stringify(acces))
-            return <View key={i} style={{flexDirection: 'row',justifyContent: 'space-evenly',}}>
-
-              <TextInput
-                editable={isEditable}
-                returnKeyType='next'
-                onSubmitEditing={()=>codeRef.current.focus()}
-                blurOnSubmit={false}
-                style={{flex: 3, height:35}}
-                label="Type"
-                mode="outlined"
-                placeholder="saisisser le type d'acces"
-                value={isEditable?localMarker.accesList[i].type: acces.type}
-                onChangeText={type =>{changeData(i,{...acces, type:type})}}/>
-
-              <TextInput
-                editable={isEditable}
-                returnKeyType='send'
-                onSubmitEditing={()=>{}}
-                autoCapitalize='characters'
-                style={{flex: 1, height:35}}
-                label="Code"
-                mode="outlined"
-                placeholder="#"
-                value={isEditable?localMarker.accesList[i].code: acces.code}
-                onChangeText={codeText => {changeData(i,{...acces, code:codeText})}}/>
-              </View>})}
+            return <AccesCode key={i} isEditable={isEditable} i={i} localMarker={localMarker} acces={acces} changeData={changeData}/>
+          })}
               <Divider/>
         {isEditable && <View style={{display:'flex', flexDirection:'row', marginTop:10}}>
           <Button style={{flex:1}} mode='outlined' color='green' onPress={add}>Ajout acces</Button>

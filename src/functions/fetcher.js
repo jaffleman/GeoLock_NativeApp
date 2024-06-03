@@ -1,31 +1,52 @@
 import {LOCAL_APP_ROUTE2} from '@env';
 import {REACT_APP_ROUTE} from '@env';
+import React from 'react';
+import { ConstantesContext } from '../context/constantesContext';
 
-export default async function fetcher({route, method, data, callback}, logMargin = '') {
+export default async function fetcher({route, method, data, callback = (e)=>{}}, logMargin = '') {
+  // const {constantes, setConstantes} = React.useContext(ConstantesContext)
+  // setConstantes({...constantes, spinner:true, showModal:false})
+  const controleur = new AbortController();
+  const signal = controleur.signal;
   const lePaquet = {
     method,
+    signal,
     body: JSON.stringify(data),
     headers: {'Content-Type': 'application/json'}};
 
-  let fetchData = {};
+  
   let isConnected = true;
+  var x = setTimeout(()=>controleur.abort(), 5000)
+  console.log('request body: '+lePaquet.body)
   // ipv6
   console.log(logMargin+' Envoie du Fetch ipv6: '+route);
-  console.log('request body: '+lePaquet.body)
-  fetchData = await fetch(`${REACT_APP_ROUTE}${route}`, lePaquet)
-    .catch(err => {isConnected = false; console.log(logMargin+' echec envoi IpV6 => err:'+ err)});
-  if (!isConnected) {
-    isConnected = true;
+  fetch(`${REACT_APP_ROUTE}${route}`, lePaquet)
+    .then(result=>result.json())
+    .then(resultData=>{
+      controleur.abort();
+      console.log('ipv6 result: '+JSON.stringify(resultData))
+      callback(resultData)
+    })
+    .catch(err => {console.log(logMargin+' echec envoi IpV6 => err:'+ err)});
+    
+ 
     // ipv4
     console.log(logMargin+' Envoie du Fetch ipv4: '+route);
-    fetchData = await fetch(`${LOCAL_APP_ROUTE2}${route}`, lePaquet)
-    .catch( err => {(isConnected = false); console.log(logMargin+' echec envoi IpV4 =>'+err)});
-  }
-  let jData = {};
-  if (isConnected) {
-    console.log(logMargin+' Fetch reponse ok...')
-    jData = await fetchData.json();}
+  fetch(`${LOCAL_APP_ROUTE2}${route}`, lePaquet)
+    .then(result=>result.json())
+    .then(resultData=>{
+      controleur.abort();
+      console.log("ipv4 result: "+JSON.stringify(resultData))
+      callback(resultData)
+    })
+    .catch( err => {console.log(logMargin+' echec envoi IpV4 =>'+err)});
+
+
+  // if (isConnected) {
+    // console.log(logMargin+' Fetch reponse ok...')
+    // jData = await fetchData.json();}
+    // console.log('fetch:jdata: '+JSON.stringify(jData))
     // console.log(logMargin+' contenu de jData: '+JSON.stringify(jData))
-    if(typeof jData === 'object' && !('acces_id' in jData)) jData = jData.map(marker=>{return {...marker}})
-  callback({isConnected, jData});
+    // if(typeof jData === 'object' && !('acces_id' in jData)) jData = jData.map(marker=>{return {...marker}})
+  
 }
