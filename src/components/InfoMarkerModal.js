@@ -52,8 +52,7 @@ export default function InfoMarkerModal() {
         commande()
       })
       deselectMarker()
-      forceSaveRefCoords()
-            }},]);};
+      forceSaveRefCoords()}},]);};
 
 
 
