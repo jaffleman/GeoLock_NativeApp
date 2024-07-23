@@ -17,6 +17,6 @@ export default CustomView = ()=>{
         {showInfoMarker && <View  style={{position:'relative', display:'flex', top:0, left:0, right:0, zIndex:100}}>
           <InfoMarkerModal/></View>}
         <CustomMapView/>
-        {constantes.showModal && <View style={{position:'relative', display: 'flex', bottom:0, left:0, right:0, zIndex:100}}>
+        {constantes.showCreatMarkerModal && <View style={{position:'relative', display: 'flex', bottom:0, left:0, right:0, zIndex:100}}>
           <AddMarkerModal/></View>}</View></TouchableWithoutFeedback>
 }

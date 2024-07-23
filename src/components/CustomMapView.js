@@ -40,10 +40,10 @@ export default CustomMapView = ()=>{
                 region={coords}
                 ><Markers coords={customCoords}/></MapView>
             <FAB
-                icon={constantes.showModal ? 'minus' : 'plus'}
+                icon={constantes.showCreatMarkerModal ? 'minus' : 'plus'}
                 style={styles.fab}
                 onPress={()=>{
-                  constantes.showModal?
+                  constantes.showCreatMarkerModal?
                   hideCreateMarkerModale()
                   :showCreateMarkerModale()}}/>
             <FAB

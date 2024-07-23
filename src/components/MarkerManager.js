@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {Marker} from 'react-native-maps'; // remove PROVIDER_GOOGLE import if not using Google Maps
 
 export default MarkerManager = ({constantes, setConstantes, getMarker}) => {
-  if (!constantes.showModal) {
+  if (!constantes.showCreatMarkerModal) {
     return constantes.markerList.map(
       (marker, index) => {
         const markerColor = marker.isFocused?'#9900ee':'#1100ee';
@@ -23,7 +23,7 @@ export default MarkerManager = ({constantes, setConstantes, getMarker}) => {
                   ...marker2,
                   isFocused: marker2.id==marker.id?true:false}})})}}
           pinColor={markerColor}></Marker>});} 
-  else if (constantes.showModal) {
+  else if (constantes.showCreatMarkerModal) {
     return (
       <Marker
         onDragEnd={e=>getMarker({...constantes.coordonates, longitude:e.nativeEvent.coordinate.longitude, latitude:e.nativeEvent.coordinate.latitude, })}

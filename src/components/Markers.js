@@ -8,7 +8,7 @@ import { ConstantesContext } from "../context/constantesContext";
 export default Markers = ({coords}) => {
     console.log("**************Markers")
     const {constantes} = useContext(ConstantesContext)
-    if (constantes.showModal) {
+    if (constantes.showCreatMarkerModal) {
         console.log('mode creation d1 marker')
         return [<EditMarker key={'editMarker'} coords={coords} />]}
 

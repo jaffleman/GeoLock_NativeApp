@@ -24,11 +24,11 @@ export default function AddMarkerModal() {
     }
   },[])
   React.useEffect(()=>{
-    if(constantes.showModal) adresseRef.current.focus();
+    if(constantes.showCreatMarkerModal) adresseRef.current.focus();
     else{
       setAdresse('');
       setAccesType('');
-      setCode('');}},[constantes.showModal])
+      setCode('');}},[constantes.showCreatMarkerModal])
   
   return (
     <Card>

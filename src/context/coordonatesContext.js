@@ -17,6 +17,8 @@ export const CoordonatesContext = createContext({
     saveCoords: ()=>{},
     saveMarkerCoords: (coords)=>{},
     forceSaveRefCoords: (coords)=>{}})
+
+
 const CoordsProvider = (props) => {
     console.log("*********coordsProvider")
     const { initDimensions, initialCoords} = props.value;
