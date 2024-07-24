@@ -30,8 +30,9 @@ export default CustomMapView = ()=>{
                 onPress={()=>deselectMarker()}
                 customMapStyle={mapStyle}
                 showsCompass={false}
-                    //onUserLocationChange={info =>getMarker(info.nativeEvent.coordinate)}
-                onRegionChangeComplete={info =>handleRegionChange(info)}
+                
+                    // onUserLocationChange={info =>getMarker(info.nativeEvent.coordinate)}
+                onRegionChangeComplete={(info, deteils) =>deteils.isGesture?handleRegionChange(info):null}
                 showsUserLocation
                 provider={PROVIDER_GOOGLE}
                 style={{flex:1}}
