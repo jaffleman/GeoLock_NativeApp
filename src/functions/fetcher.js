@@ -1,52 +1,59 @@
 import {LOCAL_APP_ROUTE2} from '@env';
 import {REACT_APP_ROUTE} from '@env';
-import React from 'react';
-import { ConstantesContext } from '../context/constantesContext';
 
 export default async function fetcher({route, method, data, callback = (e)=>{}}, logMargin = '') {
-  // const {constantes, setConstantes} = React.useContext(ConstantesContext)
-  // setConstantes({...constantes, spinner:true, showModal:false})
-  const controleur = new AbortController();
-  const signal = controleur.signal;
+  console.log('**** FETCH ****')
+  const controleurIpv4 = new AbortController();
+  const controleurIpv6 = new AbortController();
+  const signal4 = controleurIpv4.signal;
+  const signal6 = controleurIpv6.signal;
+
+  let erroCounter = 0;
+  const abort = setTimeout(() => { 
+    controleurIpv4.abort('over time')
+    controleurIpv6.abort('over time')
+    console.log('>>>>>>>>ABORT BY SETTIMEOUT<<<<<<<<')
+    callback(false)}, 10000);
+
+  const bothRequestError = () =>{
+    erroCounter ++;
+    if (erroCounter>1) {
+      console.log('>>>>>>>>ABORT BY bothRequestError()<<<<<<<<')
+      clearTimeout(abort)
+      callback(false)}}
+
   const lePaquet = {
     method,
-    signal,
     body: JSON.stringify(data),
     headers: {'Content-Type': 'application/json'}};
 
-  
-  let isConnected = true;
-  var x = setTimeout(()=>controleur.abort(), 5000)
-  console.log('request body: '+lePaquet.body)
+
+
   // ipv6
   console.log(logMargin+' Envoie du Fetch ipv6: '+route);
-  fetch(`${REACT_APP_ROUTE}${route}`, lePaquet)
+  fetch(`${REACT_APP_ROUTE}${route}`, {...lePaquet, signal:signal6})
     .then(result=>result.json())
     .then(resultData=>{
-      controleur.abort();
-      console.log('ipv6 result: '+JSON.stringify(resultData))
-      callback(resultData)
-    })
-    .catch(err => {console.log(logMargin+' echec envoi IpV6 => err:'+ err)});
+      controleurIpv4.abort('ipv6 request completed');
+      clearTimeout(abort)
+      console.log('**** FIN DU FETCH IPV6****')
+      callback(resultData)})
+    .catch(err => {
+      console.log(logMargin+' echec envoi IpV6 => '+ err)
+      if ('TypeError: Network request failed'.localeCompare(err) ==0) bothRequestError()});
     
  
-    // ipv4
-    console.log(logMargin+' Envoie du Fetch ipv4: '+route);
-  fetch(`${LOCAL_APP_ROUTE2}${route}`, lePaquet)
+   // ipv4
+  console.log(logMargin+' Envoie du Fetch ipv4: '+route);
+  fetch(`${LOCAL_APP_ROUTE2}${route}`, {...lePaquet, signal:signal4})
     .then(result=>result.json())
     .then(resultData=>{
-      controleur.abort();
-      console.log("ipv4 result: "+JSON.stringify(resultData))
-      callback(resultData)
-    })
-    .catch( err => {console.log(logMargin+' echec envoi IpV4 =>'+err)});
-
-
-  // if (isConnected) {
-    // console.log(logMargin+' Fetch reponse ok...')
-    // jData = await fetchData.json();}
-    // console.log('fetch:jdata: '+JSON.stringify(jData))
-    // console.log(logMargin+' contenu de jData: '+JSON.stringify(jData))
-    // if(typeof jData === 'object' && !('acces_id' in jData)) jData = jData.map(marker=>{return {...marker}})
+      controleurIpv6.abort('ipv4 request completed');
+      clearTimeout(abort)
+      console.log('**** FIN DU FETCH IPV4****')
+      callback(resultData)})
+    .catch( err => {
+      console.log(logMargin+' echec envoi IpV4 => '+err)
+      if ('TypeError: Network request failed'.localeCompare(err) ==0) bothRequestError()});
   
 }

@@ -1,6 +1,6 @@
-import {StyleSheet, Alert, TouchableWithoutFeedback, View, FlatList} from 'react-native';
+import {StyleSheet, Alert, TouchableWithoutFeedback, View} from 'react-native';
 import * as React from 'react';
-import {Avatar, Button, Card, Text, Switch, TextInput, Chip, Divider} from 'react-native-paper';
+import {Avatar, Button, Card, TextInput, Divider} from 'react-native-paper';
 import { ConstantesContext } from '../context/constantesContext';
 import geolock from '../functions/geolock';
 import { CoordonatesContext } from '../context/coordonatesContext';
@@ -9,18 +9,12 @@ import AccesCode from './AccesCode';
 
 export default function InfoMarkerModal() { 
   console.log('**************InfoMarkerModal')
-  const {constantes, deselectMarker, setConstantes, updateAcces, updateMarker, createAcces, deleteAcces, deleteMarker} = React.useContext(ConstantesContext)
+  const {constantes, deselectMarker, updateAcces, updateMarker, createAcces, deleteAcces, deleteMarker} = React.useContext(ConstantesContext)
   const {forceSaveRefCoords} = React.useContext(CoordonatesContext)
   const adresseRef = React.useRef(null)
   const [isEditable, setIsEditable] = React.useState(false)
   const [localMarker, setLocalMarker] = React.useState({...constantes.selectedMarker, accesList:[...constantes.selectedMarker.accesList]});
 
-  React.useEffect(()=>{
-    console.log('InfoMarkerModal:useEffect')
-    setLocalMarker({...constantes.selectedMarker})
-    setIsEditable(false)
-    // return ()=>{setLocalMarker({id:0, adresse:'', accesList:[]})}
-  },[constantes.selectedMarker])
 
   const LeftContent = props => <Avatar.Icon {...props} icon="map-marker"/>;
   const RightContent = props =><TouchableWithoutFeedback onPress={()=>setIsEditable(true)}><Avatar.Icon style={{marginRight:10}} {...props} icon="circle-edit-outline"/></TouchableWithoutFeedback> ;
@@ -66,8 +60,8 @@ export default function InfoMarkerModal() {
         left={LeftContent} right={!isEditable && RightContent}/>
       <Card.Content>
       <TextInput
+
         editable={ isEditable}
-        
         returnKeyType='next'
         onSubmitEditing={()=>accesTypeRef.current.focus()}
         blurOnSubmit={false}

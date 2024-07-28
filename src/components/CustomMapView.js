@@ -14,6 +14,7 @@ const {width} = Dimensions.get('window');
 
 export default CustomMapView = ()=>{
   const {constantes, 
+    isConnected,
     deselectMarker, 
     showCreateMarkerModale,
     hideCreateMarkerModale} = useContext(ConstantesContext)
@@ -53,7 +54,7 @@ export default CustomMapView = ()=>{
                 icon="access-point-network-off"
                 style={styles.networkIcon}
                 onPress={() => {}}
-                visible={constantes.isConnected}/></View>
+                visible={!constantes.isConnected}/></View>
     
 
 }
