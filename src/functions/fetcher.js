@@ -13,7 +13,7 @@ export default async function fetcher({route, method, data, callback = (e)=>{}},
     controleurIpv4.abort('over time')
     controleurIpv6.abort('over time')
     console.log('>>>>>>>>ABORT BY SETTIMEOUT<<<<<<<<')
-    callback(false)}, 10000);
+    callback(false)}, 600000);
 
   const bothRequestError = () =>{
     erroCounter ++;

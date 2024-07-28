@@ -6,7 +6,7 @@ export const ConstantesContext = createContext({
         markerList:[], // list of the markers sended from the api
         showCreatMarkerModal:false, // define whether the marker creator must be show
         spinner:true, // whether to show the spinner
-        isConnected:true,
+        isConnected:false,
         selectedMarker:{id:0, adresse:'', accesList:[]}},
     setConstantes : ()=>{},
     showFechedMarkers: ()=>{},
@@ -37,6 +37,10 @@ const ConstantesProvider = ({ children }) => {
     useEffect(()=>{
         console.log('ConstantesProvider:useEffect')
         if (constantes.showCreatMarkerModal === false) {
+          setConstantes({
+            ...constantes,
+            spinner:true,
+            isConnected:false})
           try {
               console.log('ConstantesProvider:useEffect: coords avant fetch: '+ JSON.stringify(refCoords))
               fetcher({
@@ -45,7 +49,7 @@ const ConstantesProvider = ({ children }) => {
                 data: {...refCoords},
                 callback: e => {
                     console.log(' ConstantesProvider:useEffect: reponse du fetch : '+ JSON.stringify(e));
-                    if (!e){setConstantes({...constantes, spinner:false})}
+                    if (!e){setConstantes({...constantes, spinner:false, isConnected:false})}
                     else{ 
                         setConstantes({...constantes, spinner:false, isConnected:true, markerList:[...e], showCreatMarkerModal:false})}},});} 
           catch (error) { console.log(' error ocurre in trying to fetcher by getMarkerExt...')}}
