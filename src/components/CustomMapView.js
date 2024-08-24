@@ -18,7 +18,7 @@ export default CustomMapView = ()=>{
     deselectMarker, 
     showCreateMarkerModale,
     hideCreateMarkerModale} = useContext(ConstantesContext)
-    const {coords, saveCoords} = useContext(CoordonatesContext)
+    const {coords, saveCoords, forceSaveRefCoords} = useContext(CoordonatesContext)
     console.log('**************CustomMapView')
     const [customCoords, setCustomCoords]  = useState({...coords})
     console.log('CustomMapView:user coords on map: '+JSON.stringify(coords))
@@ -53,7 +53,7 @@ export default CustomMapView = ()=>{
                 small
                 icon="access-point-network-off"
                 style={styles.networkIcon}
-                onPress={() => {}}
+                onPress={() => {forceSaveRefCoords()}}
                 visible={!constantes.isConnected}/></View>
     
 
