@@ -1,256 +1,359 @@
-import React, { createContext, useContext, useEffect, useState } from "react"
-import CoordsProvider, { CoordonatesContext } from "./coordonatesContext"
-import fetcher from "../functions/fetcher"
+import React, {createContext, useContext, useEffect, useState} from 'react';
+import CoordsProvider, {CoordonatesContext} from './coordonatesContext';
+import fetcher from '../functions/fetcher';
 export const ConstantesContext = createContext({
-    constantes : {
-        markerList:[], // list of the markers sended from the api
-        showCreatMarkerModal:false, // define whether the marker creator must be show
-        spinner:true, // whether to show the spinner
-        isConnected:false,
-        selectedMarker:{id:0, adresse:'', accesList:[]}},
-    setConstantes : ()=>{},
-    showFechedMarkers: ()=>{},
-    createMarker : ()=>{}, 
-    createAcces: ()=>{},
-    updateAcces: ()=>{},
-    updateMarker : ()=>{},
-    deleteMarker : ()=>{},
-    deleteAcces : ()=>{},
-    fetchMode: ()=>{},
-    refreshConstantes: ()=>{},
-    setSelectMarker: ()=>{},
-    deselectMarker: ()=>{},
-    showCreateMarkerModale: ()=>{},
-    hideCreateMarkerModale: ()=>{}},
-)
+  constantes: {
+    markerList: [], // list of the markers sended from the api
+    showCreatMarkerModal: false, // define whether the marker creator must be show
+    spinner: true, // whether to show the spinner
+    isConnected: false,
+    selectedMarker: {id: 0, adresse: '', accesList: []},
+  },
+  setConstantes: () => {},
+  showFechedMarkers: () => {},
+  createMarker: () => {},
+  createAcces: () => {},
+  updateAcces: () => {},
+  updateMarker: () => {},
+  deleteMarker: () => {},
+  deleteAcces: () => {},
+  fetchMode: () => {},
+  refreshConstantes: () => {},
+  setSelectMarker: () => {},
+  deselectMarker: () => {},
+  showCreateMarkerModale: () => {},
+  hideCreateMarkerModale: () => {},
+});
 
-const ConstantesProvider = ({ children }) => {
-    console.log('**************ConstantesProvider')
+const ConstantesProvider = ({children}) => {
+  console.log('**************ConstantesProvider');
 
-    const [constantes, setConstantes] = useState({
-        markerList:[], // list of the markers sended from the api
-        showCreatMarkerModal:false, // define whether the marker creator must be show
-        spinner:true, // whether to show the spinner
-        isConnected:false,
-        selectedMarker:{id:0, adresse:'', accesList:[]}}) // the marker info which as been selected by the user
-    const {coords, refCoords} = useContext(CoordonatesContext)
-    useEffect(()=>{
-        console.log('ConstantesProvider:useEffect')
-        if (constantes.showCreatMarkerModal === false) {
-          setConstantes({
-            ...constantes,
-            spinner:true,
-            isConnected:false})
-          try {
-              console.log('ConstantesProvider:useEffect: coords avant fetch: '+ JSON.stringify(refCoords))
-              fetcher({
-                route: 'findAllMarkers&Acces',
-                method: 'POST',
-                data: {...refCoords},
-                callback: e => {
-                    console.log(' ConstantesProvider:useEffect: reponse du fetch : '+ JSON.stringify(e));
-                    if (!e){setConstantes({...constantes, spinner:false, isConnected:false})}
-                    else{ 
-                        setConstantes({...constantes, spinner:false, isConnected:true, markerList:[...e], showCreatMarkerModal:false})}},});} 
-          catch (error) { console.log(' error ocurre in trying to fetcher by getMarkerExt...')}}
-        else{ refreshConstantes() }},[refCoords])
-        
-
-
-
-
-
-
-
-    const showFechedMarkers = (data)=>{
-        console.log('ConstantesProvider:useEffect:showFechedMarkers')
-        setConstantes({
-            ...constantes,
-            markerList:[...data],
-            positionAcces:true,
-            spinner:false,
-            showCreatMarkerModal:false,
-            isConnected:true})}
-
-
-    
-    const fetchMode = ()=>{
-        console.log('ConstantesProvider:useEffect:fetchMode')
-        setConstantes({
-            ...constantes,
-            spinner:true,
-            isConnected:false})}
-
-
-
-    const refreshConstantes = ()=>{
-        console.log('ConstantesProvider:useEffect:refreshConstantes')
-        setConstantes({...constantes})}
-
-
-    
-    const deselectMarker = ()=>{
-        console.log('ConstantesProvider:useEffect:deselectMarker')
-        setConstantes({
-            ...constantes,
-            selectedMarker:{id:0, adresse:'', accesList:[]}}) }
-
-
-
-    const setSelectMarker = (marker)=>{
-        console.log('ConstantesProvider:useEffect:setSelectMarker')
-        setConstantes({
-            ...constantes,
-            selectedMarker:{...marker}})}
-
-
-
-    const showCreateMarkerModale = ()=>{
-        console.log('ConstantesProvider:useEffect:showCreateMarkerModale')
-        setConstantes({
-            ...constantes, 
-            showCreatMarkerModal:true, showMarkerAdresseEdit:false})}
-
-
-
-    const hideCreateMarkerModale = ()=>{
-        console.log('ConstantesProvider:useEffect:hideCreateMarkerModale')
-        setConstantes({
-            ...constantes, 
-            showCreatMarkerModal:false, showMarkerAdresseEdit:true})}
-
-
-
-    const updateMarker = (item)=>{
-      if ('id' in item){
-        console.log("updating Marker: "+JSON.stringify(item))
-        setConstantes({
-          ...constantes,
-          spinner:true,
-          isConnected:false,
-          selectedMarker:{id:0, adresse:'', accesList:[]}});
-        fetcher({
-          route: 'updateMarker',
-          method: 'put',
-          data:{ 
-            isLast: true,
-            marker:{...item, 
-              latitude: coords.latitude,
-              longitude : coords.longitude}},
-          callback: e => {
-            console.log(' ConstantesProvider:useEffect: reponse du fetch : '+ JSON.stringify(e));
-            if (!e){setConstantes({...constantes, spinner:false})}
-            else{ 
-                setConstantes({...constantes, spinner:false, isConnected:true, markerList:[...e.refresh], showCreatMarkerModal:false, selectedMarker:{id:0, adresse:'', accesList:[]}})}}})}}
-
-
-
-
-    const createAcces = (item)=>{ 
-      if (item.length>0) {
-        console.log("creating acces: "+JSON.stringify(item))
-        fetcher({
-          route: 'createAcces', 
-          method: 'POST',
-          data: {
-            isLast: true,
-            accesList: item},
-          callback: e => {
-            console.log(' ConstantesProvider:useEffect: reponse du fetch : '+ JSON.stringify(e));
-            if (!e){setConstantes({...constantes, spinner:false})}
-            else{ 
-                setConstantes({...constantes, spinner:false, isConnected:true, markerList:[...e.refresh], showCreatMarkerModal:false, selectedMarker:{id:0, adresse:'', accesList:[]}})}}})}} 
-        
-
-
-    const updateAcces = (item)=>{
-      if (item.length>0) {
-        console.log("updating acces: "+JSON.stringify(item))
-          fetcher({
-            route: 'updateAcces',
-            method: 'PUT',
-            data: {
-              isLast: true,
-              accesList: item},
-            callback:e => {
-              console.log(' ConstantesProvider:useEffect: reponse du fetch : '+ JSON.stringify(e));
-              if (!e){setConstantes({...constantes, spinner:false})}
-              else{ 
-                  setConstantes({...constantes, spinner:false, isConnected:true, markerList:[...e.refresh], showCreatMarkerModal:false, selectedMarker:{id:0, adresse:'', accesList:[]}})}}})}}
-       
-                  
-
-
-    const deleteAcces = (item)=>{  
-      if (item.length>0) {
-      console.log("deleting acces: "+JSON.stringify(item))      
-          fetcher({
-            route: 'deleteAcces',
-            method: 'DELETE',
-            data: {
-              isLast: true,
-              accesList: item},
-            callback: e => {
-              console.log(' ConstantesProvider:useEffect: reponse du fetch : '+ JSON.stringify(e));
-              if (!e){setConstantes({...constantes, spinner:false})}
-              else{ 
-                  setConstantes({...constantes, spinner:false, isConnected:true, markerList:[...e.refresh], showCreatMarkerModal:false, selectedMarker:{id:0, adresse:'', accesList:[]}})}}})}}
-            
-            
-
-
-
-    const createMarker = ({adresse, code, accesType})=>{
-        const {showCreatMarkerModal,coordonates} = constantes;
-        console.log('createMarker code: '+code)
-        if (!code) return alert('vous devez entrer un code!');
-        fetcher({
-          route: 'createMarker',
-          method: 'POST',
-          data: {
-            adresse: adresse,
-            latitude: coords.latitude,
-            longitude: coords.longitude,
-            author: 'Jaffleman',
-            acces: [{type: accesType, code}],},
-          callback: e => {
-            if (!e){setConstantes({...constantes, spinner:false})}
-            else{
-              setConstantes({...constantes,showCreatMarkerModal:false, spinner:false, isConnected:true, markerList:[...e.refresh]})}},})}
-
-
-
-
-    const deleteMarker = ()=>{
-      const id = constantes.selectedMarker.id
+  const [constantes, setConstantes] = useState({
+    markerList: [], // list of the markers sended from the api
+    showCreatMarkerModal: false, // define whether the marker creator must be show
+    spinner: true, // whether to show the spinner
+    isConnected: false,
+    selectedMarker: {id: 0, adresse: '', accesList: []},
+  }); // the marker info which as been selected by the user
+  const {coords, refCoords} = useContext(CoordonatesContext);
+  useEffect(() => {
+    console.log('ConstantesProvider:useEffect');
+    if (constantes.showCreatMarkerModal === false) {
       setConstantes({
         ...constantes,
-        spinner:true,
-        isConnected:false,
-        selectedMarker:{id:0, adresse:'', accesList:[]}});
+        spinner: true,
+        isConnected: false,
+      });
+      try {
+        console.log(
+          'ConstantesProvider:useEffect: coords avant fetch: ' +
+            JSON.stringify(refCoords),
+        );
+        fetcher({
+          route: 'findAllMarkers&Acces',
+          method: 'POST',
+          data: {...refCoords},
+          callback: e => {
+            console.log(
+              ' ConstantesProvider:useEffect: reponse du fetch : ' +
+                JSON.stringify(e),
+            );
+            if (!e) {
+              setConstantes({
+                ...constantes,
+                spinner: false,
+                isConnected: false,
+              });
+            } else {
+              setConstantes({
+                ...constantes,
+                spinner: false,
+                isConnected: true,
+                markerList: [...e],
+                showCreatMarkerModal: false,
+              });
+            }
+          },
+        });
+      } catch (error) {
+        console.log(' error ocurre in trying to fetcher by getMarkerExt...');
+      }
+    } else {
+      refreshConstantes();
+    }
+  }, [refCoords]);
+
+  const showFechedMarkers = data => {
+    console.log('ConstantesProvider:useEffect:showFechedMarkers');
+    setConstantes({
+      ...constantes,
+      markerList: [...data],
+      positionAcces: true,
+      spinner: false,
+      showCreatMarkerModal: false,
+      isConnected: true,
+    });
+  };
+
+  const fetchMode = () => {
+    console.log('ConstantesProvider:useEffect:fetchMode');
+    setConstantes({
+      ...constantes,
+      spinner: true,
+      isConnected: false,
+    });
+  };
+
+  const refreshConstantes = () => {
+    console.log('ConstantesProvider:useEffect:refreshConstantes');
+    setConstantes({...constantes});
+  };
+
+  const deselectMarker = () => {
+    console.log('ConstantesProvider:useEffect:deselectMarker');
+    setConstantes({
+      ...constantes,
+      selectedMarker: {id: 0, adresse: '', accesList: []},
+    });
+  };
+
+  const setSelectMarker = marker => {
+    console.log('ConstantesProvider:useEffect:setSelectMarker');
+    setConstantes({
+      ...constantes,
+      selectedMarker: {...marker},
+    });
+  };
+
+  const showCreateMarkerModale = () => {
+    console.log('ConstantesProvider:useEffect:showCreateMarkerModale');
+    setConstantes({
+      ...constantes,
+      showCreatMarkerModal: true,
+      showMarkerAdresseEdit: false,
+    });
+  };
+
+  const hideCreateMarkerModale = () => {
+    console.log('ConstantesProvider:useEffect:hideCreateMarkerModale');
+    setConstantes({
+      ...constantes,
+      showCreatMarkerModal: false,
+      showMarkerAdresseEdit: true,
+    });
+  };
+
+  const updateMarker = item => {
+    if ('id' in item) {
+      console.log('updating Marker: ' + JSON.stringify(item));
+      setConstantes({
+        ...constantes,
+        spinner: true,
+        isConnected: false,
+        selectedMarker: {id: 0, adresse: '', accesList: []},
+      });
       fetcher({
-        route: 'deleteMarker',
+        route: 'updateMarker',
+        method: 'put',
+        data: {
+          isLast: true,
+          marker: {
+            ...item,
+            latitude: coords.latitude,
+            longitude: coords.longitude,
+          },
+        },
+        callback: e => {
+          console.log(
+            ' ConstantesProvider:useEffect: reponse du fetch : ' +
+              JSON.stringify(e),
+          );
+          if (!e) {
+            setConstantes({...constantes, spinner: false});
+          } else {
+            setConstantes({
+              ...constantes,
+              spinner: false,
+              isConnected: true,
+              markerList: [...e.refresh],
+              showCreatMarkerModal: false,
+              selectedMarker: {id: 0, adresse: '', accesList: []},
+            });
+          }
+        },
+      });
+    }
+  };
+
+  const createAcces = item => {
+    if (item.length > 0) {
+      console.log('creating acces: ' + JSON.stringify(item));
+      fetcher({
+        route: 'createAcces',
+        method: 'POST',
+        data: {
+          isLast: true,
+          accesList: item,
+        },
+        callback: e => {
+          console.log(
+            ' ConstantesProvider:useEffect: reponse du fetch : ' +
+              JSON.stringify(e),
+          );
+          if (!e) {
+            setConstantes({...constantes, spinner: false});
+          } else {
+            setConstantes({
+              ...constantes,
+              spinner: false,
+              isConnected: true,
+              markerList: [...e.refresh],
+              showCreatMarkerModal: false,
+              selectedMarker: {id: 0, adresse: '', accesList: []},
+            });
+          }
+        },
+      });
+    }
+  };
+
+  const updateAcces = item => {
+    if (item.length > 0) {
+      console.log('updating acces: ' + JSON.stringify(item));
+      fetcher({
+        route: 'updateAcces',
+        method: 'PUT',
+        data: {
+          isLast: true,
+          accesList: item,
+        },
+        callback: e => {
+          console.log(
+            ' ConstantesProvider:useEffect: reponse du fetch : ' +
+              JSON.stringify(e),
+          );
+          if (!e) {
+            setConstantes({...constantes, spinner: false});
+          } else {
+            setConstantes({
+              ...constantes,
+              spinner: false,
+              isConnected: true,
+              markerList: [...e.refresh],
+              showCreatMarkerModal: false,
+              selectedMarker: {id: 0, adresse: '', accesList: []},
+            });
+          }
+        },
+      });
+    }
+  };
+
+  const deleteAcces = item => {
+    if (item.length > 0) {
+      console.log('deleting acces: ' + JSON.stringify(item));
+      fetcher({
+        route: 'deleteAcces',
         method: 'DELETE',
         data: {
-          "isLast": true,
-          "marker": {
-              "id": id,
-              "longitude": coords.longitude,
-              "latitude": coords.latitude } },
+          isLast: true,
+          accesList: item,
+        },
         callback: e => {
-          if (!e){setConstantes({...constantes, spinner:false})}
-          else{
-            setConstantes({...constantes,showCreatMarkerModal:false, spinner:false, isConnected:true, markerList:[...e.refresh], selectedMarker:{id:0, adresse:'', accesList:[]}})}
-            console.log('refresh Markers List => forceSaveRefCoords')
-            //forceSaveRefCoords();
-        },})}
+          console.log(
+            ' ConstantesProvider:useEffect: reponse du fetch : ' +
+              JSON.stringify(e),
+          );
+          if (!e) {
+            setConstantes({...constantes, spinner: false});
+          } else {
+            setConstantes({
+              ...constantes,
+              spinner: false,
+              isConnected: true,
+              markerList: [...e.refresh],
+              showCreatMarkerModal: false,
+              selectedMarker: {id: 0, adresse: '', accesList: []},
+            });
+          }
+        },
+      });
+    }
+  };
 
+  const createMarker = ({adresse, code, accesType}) => {
+    const {showCreatMarkerModal, coordonates} = constantes;
+    console.log('createMarker code: ' + code);
+    if (!code) return alert('vous devez entrer un code!');
+    fetcher({
+      route: 'createMarker',
+      method: 'POST',
+      data: {
+        adresse: adresse,
+        latitude: coords.latitude,
+        longitude: coords.longitude,
+        author: 'Jaffleman',
+        acces: [{type: accesType, code}],
+      },
+      callback: e => {
+        if (!e) {
+          setConstantes({...constantes, spinner: false});
+        } else {
+          setConstantes({
+            ...constantes,
+            showCreatMarkerModal: false,
+            spinner: false,
+            isConnected: true,
+            markerList: [...e.refresh],
+          });
+        }
+      },
+    });
+  };
 
+  const deleteMarker = () => {
+    const id = constantes.selectedMarker.id;
+    setConstantes({
+      ...constantes,
+      spinner: true,
+      isConnected: false,
+      selectedMarker: {id: 0, adresse: '', accesList: []},
+    });
+    fetcher({
+      route: 'deleteMarker',
+      method: 'DELETE',
+      data: {
+        isLast: true,
+        marker: {
+          id: id,
+          longitude: coords.longitude,
+          latitude: coords.latitude,
+        },
+      },
+      callback: e => {
+        if (!e) {
+          setConstantes({...constantes, spinner: false});
+        } else {
+          setConstantes({
+            ...constantes,
+            showCreatMarkerModal: false,
+            spinner: false,
+            isConnected: true,
+            markerList: [...e.refresh],
+            selectedMarker: {id: 0, adresse: '', accesList: []},
+          });
+        }
+        console.log('refresh Markers List => forceSaveRefCoords');
+        //forceSaveRefCoords();
+      },
+    });
+  };
 
-
-  return ( <ConstantesContext.Provider value={{ 
+  return (
+    <ConstantesContext.Provider
+      value={{
         constantes,
-        createMarker, 
+        createMarker,
         updateMarker,
         createAcces,
         updateAcces,
@@ -263,7 +366,11 @@ const ConstantesProvider = ({ children }) => {
         setSelectMarker,
         deselectMarker,
         showCreateMarkerModale,
-        hideCreateMarkerModale}}>{children}</ConstantesContext.Provider>  )
-}
+        hideCreateMarkerModale,
+      }}>
+      {children}
+    </ConstantesContext.Provider>
+  );
+};
 
-export default ConstantesProvider
+export default ConstantesProvider;
