@@ -1,6 +1,6 @@
 import Geolocation from 'react-native-geolocation-service';
 import { ConstantesContext } from '../context/constantesContext';
-import fetcher from './fetcher';
+import fetcher from './fetcher2';
 
 async function getMarkerExt(coords, callback) {
   console.log('getMarkerExt');
