@@ -16,8 +16,8 @@ Action :
 
 // fetcher.js
 import { ROUTE_IPV6, ROUTE_IPV4 } from '@env';
-console.log('Using ROUTE_IPV6:', ROUTE_IPV6);
-console.log('Using ROUTE_IPV4:', ROUTE_IPV4);
+// console.log('Using ROUTE_IPV6:', ROUTE_IPV6);
+// console.log('Using ROUTE_IPV4:', ROUTE_IPV4);
 // console.log('Using LOCAL_APP_ROUTE22:', LOCAL_APP_ROUTE22); --- IGNORE ---
 
 /* ----------------------- Safe global ref ----------------------- */
@@ -51,8 +51,11 @@ const isAggregateError = (e) => {
 
 /* ----------------------- Polyfill Promise.any (sans dépendre d'un AggregateError global) ----------------------- */
 const promiseAny = (promises) => {
+  console.log(`********************PROMISEANY: checking promises...********************`);
+  console.log("promise.any:", typeof Promise.any);
   if (typeof Promise.any === 'function') return Promise.any(promises);
   return new Promise((resolve, reject) => {
+    console.log(`********************PROMISEANY: creating new promise********************`);
     const errors = [];
     let pending = promises.length;
     if (pending === 0) {
@@ -123,9 +126,10 @@ export default async function fetcher(
 ) {
   console.log('**** FETCH START ****');
 
-  const url6 = `${ROUTE_IPV6}${route}`;
   const url4 = `${ROUTE_IPV4}${route}`;
-
+  const url6 = `${ROUTE_IPV6}${route}`;
+  console.log('route6:', url6);
+  console.log('route4:', url4);
   const ctrl6 = new AbortController();
   const ctrl4 = new AbortController();
 
@@ -182,6 +186,7 @@ export default async function fetcher(
 
   // Swallow des rejets du "perdant" (évite "Possible Unhandled Promise Rejection")
   const swallowRejection = (label) => (e) => {
+    console.log(`********************SWALLOWREJECTION:[${label}] swallowed rejection:************************`, e?.name || 'Error', e?.message || String(e));
     if (__DEV__) {
       console.log(`[${label}] swallowed rejection:`, e?.name || 'Error', e?.message || String(e));
     }
@@ -190,8 +195,10 @@ export default async function fetcher(
 
   // doFetch: consomme une promesse de Response (déjà créée) et applique notre logique
   const doFetch = async (label, url, responsePromise) => {
+    console.log(`*********************DOFETCH:[${label}] fetching...*********************`);
     try {
       const resp = await responsePromise; // <-- si abort / net fail, ça rejette ici (capté)
+      console.log(`*******************DOFETCH:TRY:[${label}] HTTP ${resp.status} ${resp.statusText || ''}`.trim());
       if (!resp.ok) {
         const payload = await parseResponse(resp);
         const err = new Error(`HTTP ${resp.status} ${resp.statusText || ''}`.trim());
@@ -215,23 +222,28 @@ export default async function fetcher(
     timeoutId = setTimeout(onTimeout, timeoutMs);
 
     // Crée d'abord les fetch "bruts"
-    const raw6 = fetch(url6, opts6);
+    console.log('Lancement des 2 fetch en parallèle:');
     const raw4 = fetch(url4, opts4);
+    const raw6 = fetch(url6, opts6);
 
     // IMPORTANT: attacher un .catch() **directement** sur les promesses fetch
     // pour éviter toute alerte "Unhandled" quand on les abort.
-    raw6.catch(swallowRejection('ipv6/fetch'));
+    console.log('Attachement des swallowRejection aux fetch bruts');
     raw4.catch(swallowRejection('ipv4/fetch'));
+    raw6.catch(swallowRejection('ipv6/fetch'));
 
     // Envelopper avec notre logique de check/parse
-    const p6 = doFetch('ipv6', url6, raw6);
+    console.log('Création des doFetch pour les 2 fetch');
     const p4 = doFetch('ipv4', url4, raw4);
+    const p6 = doFetch('ipv6', url6, raw6);
 
     // Éviter "Unhandled" même si Promise.any résout (le perdant peut rejeter après)
-    p6.catch(swallowRejection('ipv6/doFetch'));
+    console.log('Attachement des swallowRejection aux doFetch');
     p4.catch(swallowRejection('ipv4/doFetch'));
+    p6.catch(swallowRejection('ipv6/doFetch'));
 
     // Premier succès
+    console.log('Attente du premier succès via promiseAny');
     const winner = await promiseAny([p4,p6]);
 
     // On a un résultat => annule le perdant & nettoie

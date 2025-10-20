@@ -133,7 +133,10 @@ def reactNativeArchitectures() {
 }
 
 android {
-    ndkVersion rootProject.ext.ndkVersion
+    
+
+
+    ndkVersion "29.0.14033849"//rootProject.ext.ndkVersion
 
     compileSdkVersion rootProject.ext.compileSdkVersion
 
@@ -215,12 +218,15 @@ android {
 
     splits {
         abi {
-            reset()
-            enable enableSeparateBuildPerCPUArchitecture
-            universalApk false  // If true, also generate a universal APK
-            include (*reactNativeArchitectures())
+
+        enable true
+        reset()
+        include "armeabi-v7a", "arm64-v8a" // sans x86_64
+        universalApk false
+
         }
     }
+
     signingConfigs {
         debug {
             storeFile file('debug.keystore')
@@ -228,7 +234,14 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        release {
+            storeFile file(MYAPP_RELEASE_STORE_FILE)
+            storePassword MYAPP_RELEASE_STORE_PASSWORD
+            keyAlias MYAPP_RELEASE_KEY_ALIAS
+            keyPassword MYAPP_RELEASE_KEY_PASSWORD
+        }
     }
+
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
@@ -236,7 +249,7 @@ android {
         release {
             // Caution! In production, you need to generate your own keystore file.
             // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
@@ -321,4 +334,29 @@ def isNewArchitectureEnabled() {
     // - Invoke gradle with `-newArchEnabled=true`
     // - Set an environment variable `ORG_GRADLE_PROJECT_newArchEnabled=true`
     return project.hasProperty("newArchEnabled") && project.newArchEnabled == "true"
+}
+tasks.whenTaskAdded { task ->
+    if (task.name == 'bundleReleaseJsAndAssets') {
+        task.dependsOn(
+           ':react-native-vector-icons:javaPreCompileRelease',
+            ':react-native-vector-icons:mergeReleaseJavaResource',
+            ':react-native-vector-icons:mergeReleaseResources',
+            ':react-native-vector-icons:mergeReleaseShaders',
+            ':react-native-vector-icons:packageReleaseAssets',
+            ':react-native-vector-icons:packageReleaseResources',
+            ':react-native-vector-icons:packageReleaseRenderscript',
+            ':react-native-vector-icons:parseReleaseLocalResources',
+            ':react-native-vector-icons:prepareLintJarForPublish',
+            ':react-native-vector-icons:prepareReleaseArtProfile',
+            ':react-native-vector-icons:processReleaseJavaRes',
+            ':react-native-vector-icons:processReleaseManifest',
+            ':react-native-vector-icons:stripReleaseDebugSymbols',
+            ':react-native-vector-icons:writeReleaseAarMetadata',
+            ':react-native-vector-icons:writeReleaseLintModelMetadata'
+
+        )
+    }
+        if (task.name == "compressReleaseAssets" ) {
+        task.dependsOn("copyReleaseBundledJs")
+    }
 }
