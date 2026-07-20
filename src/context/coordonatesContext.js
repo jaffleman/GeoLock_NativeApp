@@ -1,82 +1,152 @@
-import React, {createContext, useEffect, useState} from 'react';
-import Geolocation from 'react-native-geolocation-service';
-import requestLocationPermission from '../requestLocationPermission';
+import React, {
+  createContext,
+  useMemo,
+  useState,
+} from 'react';
 
 export const CoordonatesContext = createContext({
   coords: {
-    // coordonate of the user on the map
     longitude: 0,
     latitude: 0,
     longitudeDelta: 0,
     latitudeDelta: 0,
   },
   refCoords: {
-    // coordonate of the user on the map
     longitude: 0,
     latitude: 0,
     longitudeDelta: 0,
     latitudeDelta: 0,
   },
   saveCoords: () => {},
-  saveMarkerCoords: coords => {},
-  forceSaveRefCoords: coords => {},
+  saveMarkerCoords: () => {},
+  forceSaveRefCoords: () => {},
 });
 
-const CoordsProvider = props => {
-  console.log('*********coordsProvider');
-  const {initDimensions, initialCoords} = props.value;
-  const {height, width} = initDimensions;
-  const {longitude, latitude} = initialCoords;
+const log = (...args) => {
+  if (__DEV__) {
+    console.log('[COORDS]', ...args);
+  }
+};
+
+const CoordsProvider = ({
+  children,
+  value,
+}) => {
+  const { initDimensions, initialCoords } = value;
+
+  const { width, height } =
+    initDimensions;
+
   const ASPECT_RATIO = width / height;
   const LATITUDE_DELTA = 0.002;
-  const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
+  const LONGITUDE_DELTA =
+    LATITUDE_DELTA * ASPECT_RATIO;
 
-  const [coords, setCoords] = useState({
-    // coordonate of the user on the map
-    longitude: longitude,
-    latitude: latitude,
-    longitudeDelta: LONGITUDE_DELTA,
-    latitudeDelta: LATITUDE_DELTA,
-  });
+  const defaultCoords = useMemo(
+    () => ({
+      longitude:
+        initialCoords.longitude,
+      latitude:
+        initialCoords.latitude,
+      longitudeDelta:
+        LONGITUDE_DELTA,
+      latitudeDelta:
+        LATITUDE_DELTA,
+    }),
+    [
+      initialCoords,
+      LONGITUDE_DELTA,
+      LATITUDE_DELTA,
+    ]
+  );
 
-  const [refCoords, setRefCoords] = useState({
-    longitude: longitude,
-    latitude: latitude,
-    longitudeDelta: LONGITUDE_DELTA,
-    latitudeDelta: LATITUDE_DELTA,
-  });
+  const [coords, setCoords] =
+    useState(defaultCoords);
 
-  const forceSaveRefCoords = (newCoords = {...coords}) => {
-    console.log('coordsContext: forceSaveRefCoords');
-    setRefCoords({...newCoords});
+  const [refCoords, setRefCoords] =
+    useState(defaultCoords);
+
+  /**
+   * Force une mise à jour des coordonnées
+   * servant de référence pour le refresh
+   * des marqueurs.
+   */
+  const forceSaveRefCoords = (
+    newCoords = coords
+  ) => {
+    log('forceSaveRefCoords');
+
+    setRefCoords({
+      ...newCoords,
+    });
   };
 
-  const saveMarkerCoords = NewCoords => {
-    console.log('sauvegarde des coordonées du EditMarker');
-    setCoords({...coords, ...NewCoords});
+  /**
+   * Utilisé lors de l'édition
+   * d'un marqueur.
+   */
+  const saveMarkerCoords = newCoords => {
+    log('saveMarkerCoords');
+
+    setCoords(prev => ({
+      ...prev,
+      ...newCoords,
+    }));
   };
 
+  /**
+   * Sauvegarde les coordonnées de la map.
+   * Si le déplacement dépasse un seuil,
+   * déclenche également une mise à jour
+   * des coordonnées de référence.
+   */
   const saveCoords = newCoords => {
-    const longitudeDif = Math.abs(refCoords.longitude - newCoords.longitude);
-    const latitudeDif = Math.abs(refCoords.latitude - newCoords.latitude);
-    if (longitudeDif > 0.001 || latitudeDif > 0.001) {
-      console.log('fetch call for new coords');
-      setRefCoords({...newCoords});
+    const longitudeDifference =
+      Math.abs(
+        refCoords.longitude -
+          newCoords.longitude
+      );
+
+    const latitudeDifference =
+      Math.abs(
+        refCoords.latitude -
+          newCoords.latitude
+      );
+
+    const NEED_REFRESH =
+      longitudeDifference > 0.001 ||
+      latitudeDifference > 0.001;
+
+    if (NEED_REFRESH) {
+      log(
+        'Distance threshold reached, refreshing markers'
+      );
+
+      setRefCoords({
+        ...newCoords,
+      });
     }
-    console.log('CoordsProvider: saving coords: ' + JSON.stringify(newCoords));
-    // const {longitude, latitude} = newCoords;
-    setCoords({...newCoords});
+
+    setCoords({
+      ...newCoords,
+    });
   };
+
+  const contextValue = useMemo(
+    () => ({
+      coords,
+      refCoords,
+      saveCoords,
+      forceSaveRefCoords,
+      saveMarkerCoords,
+    }),
+    [coords, refCoords]
+  );
+
   return (
     <CoordonatesContext.Provider
-      value={{
-        coords,
-        refCoords,
-        saveCoords,
-        forceSaveRefCoords,
-        saveMarkerCoords,
-      }}>
-      {props.children}
+      value={contextValue}>
+      {children}
     </CoordonatesContext.Provider>
   );
 };

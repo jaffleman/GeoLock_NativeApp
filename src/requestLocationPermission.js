@@ -1,30 +1,70 @@
 import Geolocation from 'react-native-geolocation-service';
-import {PermissionsAndroid} from 'react-native';
+import {
+  PermissionsAndroid,
+  Platform,
+} from 'react-native';
+
+const log = (...args) => {
+  if (__DEV__) {
+    console.log('[LOCATION]', ...args);
+  }
+};
 
 export default async function requestLocationPermission() {
-  console.log('App:useEffect:Request location permission...');
-  if (Platform.OS === 'ios') {
-    Geolocation.setRNConfiguration({
-      authorizationLevel: 'whenInUse',
-    });
+  try {
+    log('Requesting location permission');
 
-    Geolocation.requestAuthorization();
-    // IOS permission request does not offer a callback :/
-    return null;
-  } else if (Platform.OS === 'android') {
-    try {
-      console.log('App:useEffect:Check permission android');
-      const granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+    if (Platform.OS === 'ios') {
+      Geolocation.setRNConfiguration({
+        authorizationLevel: 'whenInUse',
+      });
+
+      const status =
+        await Geolocation.requestAuthorization(
+          'whenInUse'
+        );
+
+      log('iOS authorization status:', status);
+
+      return (
+        status === 'granted' ||
+        status === 'authorized'
+      );
+    }
+
+    if (Platform.OS === 'android') {
+      const granted =
+        await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS
+            .ACCESS_FINE_LOCATION,
+          {
+            title: 'Permission de localisation',
+            message:
+              'Geolock a besoin de votre position pour fonctionner correctement.',
+            buttonPositive: 'Autoriser',
+            buttonNegative: 'Refuser',
+          }
+        );
+
+      const allowed =
+        granted ===
+        PermissionsAndroid.RESULTS.GRANTED;
+
+      log(
+        'Android permission:',
+        allowed ? 'GRANTED' : 'DENIED'
       );
 
-      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-        return true;
-      } else {
-        return false;
-      }
-    } catch (err) {
-      return false;
+      return allowed;
     }
+
+    return false;
+  } catch (error) {
+    console.error(
+      '[LOCATION] Permission error:',
+      error
+    );
+
+    return false;
   }
 }

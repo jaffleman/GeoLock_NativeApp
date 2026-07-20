@@ -1,99 +1,148 @@
-import {useContext} from 'react';
-import Geolocation from 'react-native-geolocation-service';
-import {ConstantesContext} from '../context/constantesContext';
-import {CoordonatesContext} from '../context/coordonatesContext';
 import fetcher from './fetcher';
 
-async function getMarkerExt(coords, callback) {
-  console.log(' getMarkerExt');
-  fetcher({
-    route: 'findAllMarkers&Acces',
+/* -------------------------------------------------------------------------- */
+/*                                MARKERS API                                 */
+/* -------------------------------------------------------------------------- */
+
+async function getMarkersFromApi(coords) {
+  const result = await fetcher({
+    route: '/findAllMarkers&Acces',
     method: 'POST',
-    data: {...coords},
-    callback2: e => {
-      console.log(' reponse du fetch : ' + JSON.stringify(e));
-      if (e.isConnected) {
-        callback(e.jData);
-      }
-    },
+    data: coords,
   });
+
+  if (!result?.isConnected) {
+    return [];
+  }
+
+  return result.jData || [];
 }
 
-export default geolock = {
-  getPosition: (setDataToFetch, logMarging = '') => {},
+/* -------------------------------------------------------------------------- */
+/*                                  GEOLOCK                                   */
+/* -------------------------------------------------------------------------- */
 
-  getMarkers: (coords, callback) => {
-    getMarkerExt(coords, callback);
+const geolock = {
+  /* ---------------------------------------------------------------------- */
+  /*                              POSITION                                   */
+  /* ---------------------------------------------------------------------- */
+
+  getPosition(setDataToFetch, logMargin = '') {
+    // à implémenter
   },
 
-  sendToBase: (
+  /* ---------------------------------------------------------------------- */
+  /*                               MARKERS                                   */
+  /* ---------------------------------------------------------------------- */
+
+  async getMarkers(coords) {
+    return getMarkersFromApi(coords);
+  },
+
+  /* ---------------------------------------------------------------------- */
+  /*                            CREATION MARKER                              */
+  /* ---------------------------------------------------------------------- */
+
+  async sendToBase(
     adresse,
     code,
     accesType,
     constantes,
-    setConstantes,
-    setDataToFetch,
-  ) => {
-    console.log('geolock.sendToBase()');
-    const {showModal, coordonates} = constantes;
-    if (!code) return alert('Vous devez entrer un code!');
-    setDataToFetch({
-      route: 'create',
+    setConstantes
+  ) {
+    if (!code?.trim()) {
+      alert('Vous devez entrer un code!');
+      return false;
+    }
+
+    const result = await fetcher({
+      route: '/create',
       method: 'POST',
       data: {
-        adresse: adresse,
+        adresse,
         latitude: constantes.coordonates.latitude,
         longitude: constantes.coordonates.longitude,
-        acces: [{type: accesType, code}],
-      },
-      callback: e => {
-        // console.log('reponse du fetch : ' + JSON.stringify(e));
-        if (e.isConnected) {
-          getMarkerExt();
-          setTimeout(() => {
-            setConstantes({
-              ...constantes,
-              showModal: false,
-              spinner: false,
-              isConnected: e.isConnected,
-            });
-          }, 100);
-        }
+        acces: [
+          {
+            type: accesType,
+            code,
+          },
+        ],
       },
     });
+
+    if (!result?.isConnected) {
+      return false;
+    }
+
+    setConstantes(prev => ({
+      ...prev,
+      showModal: false,
+      spinner: false,
+      isConnected: true,
+    }));
+
+    return true;
   },
 
-  objectComparator: (source, alter) => {
+  /* ---------------------------------------------------------------------- */
+  /*                         COMPARAISON DE MARKERS                          */
+  /* ---------------------------------------------------------------------- */
+
+  objectComparator(source, alter) {
+    if (
+      typeof source !== 'object' ||
+      typeof alter !== 'object' ||
+      !source ||
+      !alter
+    ) {
+      return {
+        newMarker: {},
+        newAcces: [],
+        updatedAcces: [],
+        deletedAcces: [],
+      };
+    }
+
     const newMarker = {};
     const newAcces = [];
     const updatedAcces = [];
     const deletedAcces = [];
 
-    if (typeof source === 'object' && typeof alter === 'object') {
-      if (source.adresse.trim() != alter.adresse.trim()) {
-        newMarker.id = source.id;
-        newMarker.adresse = alter.adresse;
-      }
-
-      alter.accesList.map(acces2 => {
-        if ('identifier' in acces2) {
-          switch (acces2.identifier) {
-            case 0:
-              deletedAcces.push({...acces2});
-              break;
-            case 1:
-              newAcces.push({...acces2});
-              break;
-            case 2:
-              updatedAcces.push({...acces2});
-              break;
-
-            default:
-              break;
-          }
-        }
-      });
-      return {newMarker, newAcces, updatedAcces, deletedAcces};
+    if (
+      source.adresse?.trim() !==
+      alter.adresse?.trim()
+    ) {
+      newMarker.id = source.id;
+      newMarker.adresse = alter.adresse;
     }
+
+    alter.accesList?.forEach(acces => {
+      switch (acces.identifier) {
+        case 0:
+          deletedAcces.push({ ...acces });
+          break;
+
+        case 1:
+          newAcces.push({ ...acces });
+          break;
+
+        case 2:
+          updatedAcces.push({ ...acces });
+          break;
+
+        default:
+          break;
+      }
+    });
+
+    return {
+      newMarker,
+      newAcces,
+      updatedAcces,
+      deletedAcces,
+    };
   },
 };
+
+export default geolock;
