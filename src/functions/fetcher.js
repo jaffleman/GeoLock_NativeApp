@@ -93,23 +93,10 @@ async function parseResponse(resp) {
   }
 }
 
-/* ----------------------- fetcher principal ----------------------- */
+const API_URL = 'https://api.jaffeman.tech/geolock';
+
 /**
- * Fait 2 requêtes en parallèle (IPv6 & IPv4) et retourne la 1ère qui réussit.
- * Annule proprement le perdant, timeout global, et évite les "Unhandled Rejection".
- *
- * @param {{
- *   route: string,
- *   method?: string,
- *   data?: any,
- *   headers?: Record<string,string>,
- *   timeoutMs?: number,
- *   idempotencyKey?: string,
- *   callback?: (res: any|false) => void,
- *   signal?: AbortSignal, // optionnel: annulation externe (propagée aux 2 requêtes)
- * }} params
- * @param {string} logMargin
- * @returns {Promise<any|false>}
+ * Fetch unique sur l'API IPv4.
  */
 export default async function fetcher(
   {
@@ -117,7 +104,7 @@ export default async function fetcher(
     method = 'GET',
     data,
     headers = {},
-    timeoutMs = 4000, 
+    timeoutMs = 4000,
     idempotencyKey,
     callback = () => false,
     signal: externalSignal,
@@ -126,26 +113,26 @@ export default async function fetcher(
 ) {
   console.log('**** FETCH START ****');
 
-  const url4 = `${ROUTE_IPV4}${route}`;
-  const url6 = `${ROUTE_IPV6}${route}`;
-  console.log('route6:', url6);
-  console.log('route4:', url4);
-  const ctrl6 = new AbortController();
-  const ctrl4 = new AbortController();
+  const url = `${API_URL}${route}`;
+  console.log('URL:', url);
 
-  // Propagation d’un signal externe éventuel
+  const controller = new AbortController();
+
+  // Propagation d'un éventuel AbortSignal externe
   const propagateAbort = () => {
     try {
-      ctrl6.abort('external abort');
-      ctrl4.abort('external abort');
+      controller.abort('external abort');
     } catch {}
   };
+
   if (externalSignal) {
     if (externalSignal.aborted) {
       propagateAbort();
     } else {
       try {
-        externalSignal.addEventListener('abort', propagateAbort, { once: true });
+        externalSignal.addEventListener('abort', propagateAbort, {
+          once: true,
+        });
       } catch {
         externalSignal.onabort = propagateAbort;
       }
@@ -156,130 +143,84 @@ export default async function fetcher(
     'Content-Type': 'application/json',
     ...headers,
   };
+
   if (idempotencyKey) {
     finalHeaders['Idempotency-Key'] = idempotencyKey;
   }
 
-  const optsBase = {
+  const withBody =
+    METHODS_WITH_BODY.has(method.toUpperCase()) &&
+    data !== undefined;
+
+  const fetchOptions = {
     method,
     headers: finalHeaders,
+    signal: controller.signal,
+    ...(withBody && { body: JSON.stringify(data) }),
   };
 
-  // Ajouter le body uniquement si méthode + data
-  const withBody = METHODS_WITH_BODY.has(method.toUpperCase()) && data !== undefined;
-  console.log("avec body?: ", withBody)
-  const opts6 = withBody
-    ? { ...optsBase, body: JSON.stringify(data), signal: ctrl6.signal }
-    : { ...optsBase, signal: ctrl6.signal };
-  const opts4 = withBody
-    ? { ...optsBase, body: JSON.stringify(data), signal: ctrl4.signal }
-    : { ...optsBase, signal: ctrl4.signal };
-
-  // Timeout global
   let timeoutId;
-  const onTimeout = () => {
-    try {
-      ctrl6.abort('timeout');
-      ctrl4.abort('timeout');
-    } catch {}
-  };
-
-  // Swallow des rejets du "perdant" (évite "Possible Unhandled Promise Rejection")
-  const swallowRejection = (label) => (e) => {
-    console.log(`********************SWALLOWREJECTION:[${label}] swallowed rejection:************************`, e?.name || 'Error', e?.message || String(e));
-    if (__DEV__) {
-      console.log(`[${label}] swallowed rejection:`, e?.name || 'Error', e?.message || String(e));
-    }
-    // Pas de rethrow: on avale volontairement pour éviter le warning RN
-  };
-
-  // doFetch: consomme une promesse de Response (déjà créée) et applique notre logique
-  const doFetch = async (label, url, responsePromise) => {
-    console.log(`*********************DOFETCH:[${label}] fetching...*********************`);
-    try {
-      const resp = await responsePromise; // <-- si abort / net fail, ça rejette ici (capté)
-      console.log(`*******************DOFETCH:TRY:[${label}] HTTP ${resp.status} ${resp.statusText || ''}`.trim());
-      if (!resp.ok) {
-        const payload = await parseResponse(resp);
-        const err = new Error(`HTTP ${resp.status} ${resp.statusText || ''}`.trim());
-        err.status = resp.status;
-        err.payload = payload;
-        err.url = url;
-        err.label = label;
-        throw err;
-      }
-      const parsed = await parseResponse(resp);
-      return { label, url, data: parsed };
-    } catch (err) {
-      err.label = err.label || label;
-      err.url = err.url || url;
-      throw err;
-    }
-  };
 
   try {
     const startedAt = Date.now();
-    timeoutId = setTimeout(onTimeout, timeoutMs);
 
-    // Crée d'abord les fetch "bruts"
-    console.log('Lancement des 2 fetch en parallèle:');
-    const raw4 = fetch(url4, opts4);
-    const raw6 = fetch(url6, opts6);
+    timeoutId = setTimeout(() => {
+      controller.abort('timeout');
+    }, timeoutMs);
 
-    // IMPORTANT: attacher un .catch() **directement** sur les promesses fetch
-    // pour éviter toute alerte "Unhandled" quand on les abort.
-    console.log('Attachement des swallowRejection aux fetch bruts');
-    raw4.catch(swallowRejection('ipv4/fetch'));
-    raw6.catch(swallowRejection('ipv6/fetch'));
+    console.log(
+      `Requête ${method} vers ${url} ${
+        withBody ? '(avec body)' : '(sans body)'
+      }`
+    );
 
-    // Envelopper avec notre logique de check/parse
-    console.log('Création des doFetch pour les 2 fetch');
-    const p4 = doFetch('ipv4', url4, raw4);
-    const p6 = doFetch('ipv6', url6, raw6);
+    const response = await fetch(url, fetchOptions);
 
-    // Éviter "Unhandled" même si Promise.any résout (le perdant peut rejeter après)
-    console.log('Attachement des swallowRejection aux doFetch');
-    p4.catch(swallowRejection('ipv4/doFetch'));
-    p6.catch(swallowRejection('ipv6/doFetch'));
-
-    // Premier succès
-    console.log('Attente du premier succès via promiseAny');
-    const winner = await promiseAny([p4,p6]);
-
-    // On a un résultat => annule le perdant & nettoie
     clearTimeout(timeoutId);
-    try {
-      ctrl6.abort('winner chosen');
-      ctrl4.abort('winner chosen');
-    } catch {}
+
+    console.log(
+      `HTTP ${response.status} ${response.statusText || ''}`
+    );
+
+    if (!response.ok) {
+      const payload = await parseResponse(response);
+
+      const err = new Error(
+        `HTTP ${response.status} ${response.statusText || ''}`.trim()
+      );
+
+      err.status = response.status;
+      err.payload = payload;
+      err.url = url;
+
+      throw err;
+    }
+
+    const result = await parseResponse(response);
 
     const duration = Date.now() - startedAt;
-    console.log(`**** FETCH DONE (${winner.label}) in ${duration}ms ****`);
 
-    // Callback + retour
-    callback(winner.data);
-    return winner.data;
+    console.log(
+      `**** FETCH DONE (${response.status}) in ${duration}ms ****`
+    );
+
+    callback(result);
+
+    return result;
   } catch (err) {
     clearTimeout(timeoutId);
 
-    if (isAggregateError(err)) {
-      console.log(`${logMargin} échec => toutes les requêtes ont échoué`);
-      const list = err.errors || [];
-      list.forEach((e, i) => {
-        const name = e?.name || e?.status || 'Error';
-        const msg = e?.message || String(e);
-        console.log(
-          `[${i}] ${e?.label || 'unknown'} | ${name}: ${msg} | URL: ${e?.url || 'n/a'}`
-        );
-      });
-    } else {
-      const name = err?.name || err?.status || 'Error';
-      const msg = err?.message || String(err);
-      console.log(`${logMargin} échec => ${name}: ${msg}`);
-      if (err?.url) console.log(`URL: ${err.url}`);
+    const name = err?.name || err?.status || 'Error';
+    const msg = err?.message || String(err);
+
+    console.log(`${logMargin} échec => ${name}: ${msg}`);
+
+    if (err?.url) {
+      console.log(`URL: ${err.url}`);
     }
 
     callback(false);
+
     return false;
   }
 }
